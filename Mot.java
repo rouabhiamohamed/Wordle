@@ -22,13 +22,13 @@ int count=0;
             level = diff.nextLine();
 
             if (level.equals("f") || level.equals("m") || level.equals("d")) {
-                break; // Exit the loop when a valid level is entered
+                break;
             } else {
                 System.out.println("Choix invalide. Veuillez choisir 'f', 'm' ou 'd'.");
             }
         }
 
-        // You can now use the 'level' variable to proceed with the selected difficulty.
+
         System.out.println("Vous avez choisi la difficulté : " + level);
 
 
@@ -38,23 +38,11 @@ int count=0;
             Elements links = document.select(" p:contains(Noms) > a[href], p:contains(Adverbes) > a[href], p:contains(Adjectifs) > a[href] ,p:contains(Verbes) > a[href],p:contains(Prépositions) > a[href]");
 
             for (Element link : links) {
+
                 String linkText = link.text();
-if (level =="f"){
-                if(linkText.length()==5) {
+                if(level.equals("f") && linkText.length()==5 || level.equals("m") && linkText.length()==6 || level.equals("d") && linkText.length()==8){
                     tableauDeMots.add(linkText);
-                }}
-                if (level =="m"){
-                    if(linkText.length()==8) {
-                        tableauDeMots.add(linkText);
-                    }}
-                if (level =="d"){
-                    if(linkText.length()==10) {
-                        tableauDeMots.add(linkText);
-                    }}
-
-
-
-                count++;
+                    count++;}
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,12 +54,14 @@ if (level =="f"){
           // System.out.println(Text);
         }
         System.out.println(count);
-
         Random random = new Random();
-        int index = random.nextInt(tableauFinal.length);
-       String randomValue = tableauFinal[index];
+        int min = 0;  // Lower bound
+        int max = tableauFinal.length;
+        int randomInt = random.nextInt((max - min) + 1) + min;
+
+       String randomValue = tableauFinal[randomInt];
         System.out.println(randomValue);
-        String example=tableauFinal[index];
+        String example=tableauFinal[randomInt];
         // String example= "mouiller";
 
         int[] couleurMot = new int[example.length()];
