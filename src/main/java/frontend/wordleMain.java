@@ -10,13 +10,22 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+
 public class wordleMain extends Application {
 
     private Stage mainMenuStage;
     private Label elapsedTimeLabel;
     private Button[][] gameGridButtons;
 
+    // I added those so we could change the difficulty at will...
     private int CellsCount;
+
+    // Contains the word to find, somehow this wasn't here already lol
+    private String wordToFind;
+
+
+
+    private String wordHint;
 
     private Stage gameStage;
     private long startTime;
@@ -35,13 +44,13 @@ public class wordleMain extends Application {
         easyMode.setStyle("-fx-background-color: green;");
         easyMode.setOnAction(e -> createGameUI(5));
         // Added two new difficulties pick
-        Button medium = new Button("Start a Worlde game in a 6x5 grid");
+        Button medium = new Button("Start a Worlde game in a 8x5 grid");
         medium.setStyle("-fx-background-color: orange;");
-        medium.setOnAction(e -> createGameUI(6));
+        medium.setOnAction(e -> createGameUI(8));
 
-        Button hard = new Button("Start a Worlde game in a 8x5 grid");
+        Button hard = new Button("Start a Worlde game in a 10x5 grid");
         hard.setStyle("-fx-background-color: red;");
-        hard.setOnAction(e -> createGameUI(8));
+        hard.setOnAction(e -> createGameUI(10));
 
 
         VBox mainMenuLayout = new VBox(30);
@@ -53,6 +62,7 @@ public class wordleMain extends Application {
         Scene mainMenuScene = new Scene(mainMenuLayout, 800, 768);
         mainMenuStage.setScene(mainMenuScene);
         mainMenuStage.show();
+
     }
 
     private void createGameUI(int Cells) {
@@ -137,7 +147,18 @@ public class wordleMain extends Application {
             gameStage.close();
         });
 
-        scorePanel.getChildren().addAll(helpButton, restartButton, new Button("Get Hint"), backButton);
+        Button hintButton = new Button("Get Hint");
+        hintButton.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Wordle Hint");
+            alert.setHeaderText(null);
+            alert.setContentText("Here's your hint mate : " + getWordHint());
+            alert.showAndWait();
+        });
+
+
+        scorePanel.getChildren().addAll(helpButton, restartButton, hintButton, backButton);
+
         gameLayout.setBottom(scorePanel);
 
         // Scores Panel
@@ -289,7 +310,7 @@ public class wordleMain extends Application {
     }
 
     private void clearGridLetters() {
-        for (int col = 0; col < 5; col++) {
+        for (int col = 0; col < CellsCount; col++) {
             gameGridButtons[virtualKeyboard.currentRow][col].setText("");
         }
 
@@ -301,7 +322,7 @@ public class wordleMain extends Application {
 
     private void restartGame() {
         for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 5; col++) {
+            for (int col = 0; col < CellsCount; col++) {
                 gameGridButtons[row][col].setText("");
             }
         }
@@ -319,4 +340,25 @@ public class wordleMain extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+
+
+    public void setWordToFind(String wordToFind) {
+        this.wordToFind = wordToFind;
+    }
+
+    public String getWordToFind() {
+        return wordToFind;
+    }
+
+    public String getWordHint() {
+        return wordHint;
+    }
+
+    public void setWordHint(String wordHint) {
+        this.wordHint = wordHint;
+    }
+
+
+
 }

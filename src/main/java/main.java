@@ -1,5 +1,4 @@
 import backend.Hint;
-import backend.Partie;
 import frontend.wordleMain;
 
 // --module-path "./javafx/lib" --add-modules javafx.controls,javafx.fxml
@@ -17,8 +16,8 @@ public class main {
         wordleMain.main(args);
 
         //How to use the backend
-        Partie game = new Partie();
-        game.jouer();
+        //Partie game = new Partie();
+        //game.jouer();
 
     }
 

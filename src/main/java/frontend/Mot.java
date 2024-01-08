@@ -1,40 +1,31 @@
 package frontend;
 
-import java.util.Random;
-import java.util.Scanner;
-import java.util.ArrayList;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
+
 
 public class Mot {
-    public static void main(String [] args) {
+
+
+    /*
+        I changed somewhat this function so it can properly behave with the frontend
+        cause there's no way in hell I'm doing multithreading for this project so both codes
+        works without much changes...
+     */
+    public static void backEndGameLoop(String level)
+    {
         ArrayList<String> tableauDeMots = new ArrayList<>();
         int count = 0;
-        Scanner diff = new Scanner(System.in);
-        String level;
-        int rejouer ;
-        while ( true || rejouer==1 ) {
-            System.out.println("Choisissez la difficulté :");
-            System.out.println("Facile pour un mot de 5 lettres (appuyez sur 'f')");
-            System.out.println("Moyen pour un mot de 8 lettres (appuyez sur 'm')");
-            System.out.println("Difficile pour un mot de 10 lettres (appuyez sur 'd')");
-
-            level = diff.nextLine();
-
-            if (level.equals("f") || level.equals("m") || level.equals("d")) {
-                break;
-            } else {
-                System.out.println("Choix invalide. Veuillez choisir 'f', 'm' ou 'd'.");
-            }
-        }
 
 
-        System.out.println("Vous avez choisi la difficulté : " + level);
-
-
+        // Would it kill you to write what the fuck is this part of code supposed to do ?
+        //Besides why it's not a function ??????
         try {
             String url = "https://fr.wiktionary.org/wiki/Wiktionnaire:Liste_de_1750_mots_fran%C3%A7ais_les_plus_courants";
             Document document = Jsoup.connect(url).get();
@@ -51,18 +42,15 @@ public class Mot {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         String[] tableauFinal = tableauDeMots.toArray(new String[0]);
 
-        /*for (String Text : tableauFinal) {
-
-          System.out.println(Text);
-        }*/
         System.out.println(count);
         Random random = new Random();
         int min = 0;  // Lower bound
         int max = tableauFinal.length;
         int randomInt = random.nextInt((max - min) + 1) + min;
-        //System.out.println(randomValue);
+
         String example = tableauFinal[randomInt];
         System.out.println(example);
 
@@ -131,23 +119,6 @@ public class Mot {
         }
 
     }
-        Scanner choice = new Scanner(System.in);
-        String choix ;
-        while (true){
-            System.out.println("voulez vous rejour (Y/N)");
-            choix = choice.nextLine();
-
-            if(choix=="y"){
-                rejouer=1;
-                System.out.println(choix);
-                break;
-            }
-            else if(choix=="n"){
-                rejouer=0;
-                break;
-            }
-
-        }
 
 
     }
