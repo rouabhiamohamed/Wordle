@@ -185,7 +185,11 @@ public class wordleMain extends Application {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Wordle Hint");
             alert.setHeaderText(null);
-            alert.setContentText("Here's your hint mate : " + wordHint);
+            if (null == wordHint)
+                alert.setContentText("Please boot the python server in order to get the hint");
+            else
+                alert.setContentText("Here's your hint mate : " + wordHint);
+
             alert.showAndWait();
         });
 
@@ -317,6 +321,34 @@ public class wordleMain extends Application {
                 word.append(gameGridButtons[currentRow][col].getText());
             }
             System.out.println("Mot validé : " + word.toString());
+            int stateOfWord = game.jouer(word.toString());
+
+            // The word has been refused by the dictionnary
+            // Make stuff red or some shit
+            if (stateOfWord == -1)
+            {
+                // Do stuff
+                return;
+            }
+
+            // Player has lost, technically this is handled here as well afaik
+            else if (stateOfWord == -2)
+            {
+                // Do stuff
+                return;
+            }
+
+            // Word has been accepted, thus it can do the rest of the function below :)
+            else if (stateOfWord == 0)
+            {
+                // Do stuff
+            }
+
+            // Right answer has been found
+            else if (stateOfWord == 1)
+            {
+                // Do stuff
+            }
 
             // Unlock the user input
             canAddLetters = true;

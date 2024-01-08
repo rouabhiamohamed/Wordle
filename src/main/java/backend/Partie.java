@@ -19,6 +19,9 @@ public class Partie {
     private Dico dictionnaire;
     private int[] couleurMot;
 
+    // in order to save the current state of the game
+    private int attempts;
+
 
     public Partie() {
         tableauDeMots = new ArrayList<>();
@@ -75,14 +78,12 @@ public class Partie {
     // therefore the frontend will simply call this function to do the work
     // Besides I also removed the replay stuff since we're just going to destroy and recreate the object anyways
     // Finally, I moved the initialization stuff elsewhere as well
-    // Actually, I made it so it returns an int, that way the frondend knows what to do...
+    // Actually, I made it so it returns an int, that way the front end knows what to do...
     // It will return -1 if the word has been refused by the dictionnary
     // It will return 1 if the word was the correct answer
     // It will return -2 if the player lost
     // Otherwise it will return 0
-    public int jouer(int attempts) {
-                //the word that we enter
-                String mot_entre = entrer_mot();
+    public int jouer(String mot_entre) {
                 //check if its in the dictionary and the extracted words from the url
                 boolean motTrouve = Dictionnaire(mot_entre);
                 if (!motTrouve) {
@@ -132,11 +133,8 @@ public class Partie {
         int randomInt = random.nextInt((max - min) + 1) + min;
         return Accent.removeAccents(tableauDeMots.get(randomInt));
     }
-//to enter the word
-    public String entrer_mot() {
-        System.out.println("Entrer votre mot : ");
-        return scanner.next();
-    }
+
+
 //the dictionary where we check if its in the dictionary or from the url we parsed
     public boolean Dictionnaire(String word) {
         Parser parser = new Parser();
