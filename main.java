@@ -1,8 +1,11 @@
-public class main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-        System.out.println("Hello, World!");
-        System.out.println("Hello, World!");
-    }
-}
+import backend.*;
 
+public class main {
+    public static void main(String [] args){
+        Partie game = new Partie();
+        game.jouer();
+
+    }
+
+
+}
