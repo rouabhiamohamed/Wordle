@@ -12,6 +12,7 @@ import  java.lang.String;
  */
 public class Partie {
     private ArrayList<String> tableauDeMots;
+
     private String example;
     private int tentative;
     private Scanner scanner;
@@ -31,9 +32,9 @@ public class Partie {
        function so I could properly use it in front end, anyways this function just sets up the difficulty
        and starts the game
      */
-    public void initialization(String level)
+    public void initialization(int Cells)
     {
-        level = difficulte();
+        String level = levelIntToString(Cells);
         System.out.println("Vous avez choisi la difficulté : " + level);
         //fill the arraylist of words
         tableauDeMots = parsing(level);
@@ -43,6 +44,27 @@ public class Partie {
         couleurMot = new int[example.length()];
         //Display the word to find out, you might want to remove it lol
         System.out.println(example);
+    }
+
+
+    /*
+        Because seemingly you enjoy making stuff harder for no reason
+        I had to make this function in order to translate the "Cells" count into
+        a string...
+        Author : Ezzaamari Nassim
+     */
+    public String levelIntToString(int Cells)
+    {
+        switch (Cells) {
+            case 5:
+                return "f";
+            case 6:
+                return "m";
+            case 8:
+                return "d";
+            default:
+                return "f";
+        }
     }
 
 
@@ -59,7 +81,6 @@ public class Partie {
     // It will return -2 if the player lost
     // Otherwise it will return 0
     public int jouer(int attempts) {
-
                 //the word that we enter
                 String mot_entre = entrer_mot();
                 //check if its in the dictionary and the extracted words from the url
@@ -98,21 +119,7 @@ public class Partie {
                 return 0;
     }
 
-//cchose the difficulty
-    public String difficulte() {
-        while (true) {
-            System.out.println("Choisissez la difficulté :");
-            System.out.println("Facile pour un mot de 5 lettres (appuyez sur 'f')");
-            System.out.println("Moyen pour un mot de 6 lettres (appuyez sur 'm')");
-            System.out.println("Difficile pour un mot de 8 lettres (appuyez sur 'd')");
-            String level = scanner.next();
-            if (level.equals("f") || level.equals("m") || level.equals("d")) {
-                return level;
-            } else {
-                System.out.println("Choix invalide. Veuillez choisir 'f', 'm' ou 'd'.");
-            }
-        }
-    }
+
 //parse the url and extract words depending on the level chosen
     private ArrayList<String> parsing(String level) {
         Parser parser = new Parser();
@@ -183,6 +190,16 @@ public class Partie {
             }
         }
     }
+
+    public String getExample() {
+        return example;
+    }
+
+    public void setExample(String example) {
+        this.example = example;
+    }
+
+
 }
 
 

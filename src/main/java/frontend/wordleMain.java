@@ -1,5 +1,7 @@
 package frontend;
 
+import backend.Hint;
+import backend.Partie;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,6 +12,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+
+
+/*
+    Author : Marieme Soda MBEGUERE
+    Merger : Nassim Ezzaamari
+ */
 
 public class wordleMain extends Application {
 
@@ -17,22 +28,22 @@ public class wordleMain extends Application {
     private Label elapsedTimeLabel;
     private Button[][] gameGridButtons;
 
-    // I added those so we could change the difficulty at will...
-    private int CellsCount;
-
-    // Contains the word to find, somehow this wasn't here already lol
-    private String wordToFind;
-
-
-
-    private String wordHint;
-
     private Stage gameStage;
     private long startTime;
     private final char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y'};
     private int nextLetterIndex = 0;
-
     private VirtualKeyboard virtualKeyboard; // Ajout d'une instance de VirtualKeyboard
+
+
+    // I added those so we could change the difficulty at will...
+    private int CellsCount;
+    // Contains the word to find, somehow this wasn't here already lol
+    private String wordToFind;
+    // This boolean is used so the program knows if it can add new letters or not
+    // it effectively blocks the input until the word gets registred
+    private boolean canAddLetters;
+    private String wordHint;
+    private Partie game;
 
     @Override
     public void start(Stage primaryStage) {
@@ -44,13 +55,13 @@ public class wordleMain extends Application {
         easyMode.setStyle("-fx-background-color: green;");
         easyMode.setOnAction(e -> createGameUI(5));
         // Added two new difficulties pick
-        Button medium = new Button("Start a Worlde game in a 8x5 grid");
+        Button medium = new Button("Start a Worlde game in a 6x5 grid");
         medium.setStyle("-fx-background-color: orange;");
-        medium.setOnAction(e -> createGameUI(8));
+        medium.setOnAction(e -> createGameUI(6));
 
-        Button hard = new Button("Start a Worlde game in a 10x5 grid");
+        Button hard = new Button("Start a Worlde game in a 8x5 grid");
         hard.setStyle("-fx-background-color: red;");
-        hard.setOnAction(e -> createGameUI(10));
+        hard.setOnAction(e -> createGameUI(8));
 
 
         VBox mainMenuLayout = new VBox(30);
@@ -63,8 +74,22 @@ public class wordleMain extends Application {
         mainMenuStage.setScene(mainMenuScene);
         mainMenuStage.show();
 
+        // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateElapsedTime()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
     }
 
+    /*
+        So this function simply set some initial variables that are going to be used (hopefully)
+        several times within the runtime of this program
+     */
+    public void initializeSomeVariables()
+    {
+        wordToFind = game.getExample();
+        wordHint = Hint.getOneHint(wordToFind);
+    }
     private void createGameUI(int Cells) {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
@@ -74,6 +99,14 @@ public class wordleMain extends Application {
         //Cells means how wide, as for the 5 it means you have 5 chance to find the word
         CellsCount = Cells;
         gameGridButtons = new Button[5][CellsCount];
+
+        // Now that I think about it, we could put the CellsCount on the constructor instead
+        game = new Partie();
+        game.initialization(CellsCount);
+        initializeSomeVariables();
+
+        // Allow the user to input new letters
+        canAddLetters = true;
 
         BorderPane gameLayout = new BorderPane();
         Scene gameScene = new Scene(gameLayout, 800, 768);
@@ -152,7 +185,7 @@ public class wordleMain extends Application {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Wordle Hint");
             alert.setHeaderText(null);
-            alert.setContentText("Here's your hint mate : " + getWordHint());
+            alert.setContentText("Here's your hint mate : " + wordHint);
             alert.showAndWait();
         });
 
@@ -229,6 +262,9 @@ public class wordleMain extends Application {
     //From what I understand, this code checks if we have finished a row or not, if so then it automatically
     //Register the word...
     private void handleButtonClick(Button button) {
+        // If the word hasn't been validated then it can no longer register new words
+        if (!canAddLetters)
+            return;
         if (virtualKeyboard.currentRow < 5) { // Permet la saisie uniquement dans la première ligne
             for (int row = 0; row < 5; row++) {
                 for (int col = 0; col < CellsCount; col++) {
@@ -239,9 +275,10 @@ public class wordleMain extends Application {
 
                         // Si la ligne actuelle est complète:
                         if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-                            virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
+                            // And user press Enter Key, then allow it
+                            canAddLetters = false;
+                             //virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
                         }
-
                         return;
                     }
                 }
@@ -262,11 +299,14 @@ public class wordleMain extends Application {
             if (lastLetterButton != null && lettersAddedToRow > 0) {
                 lettersAddedToRow--;
                 lastLetterButton.setText("");  // Effacez la lettre du dernier bouton ajouté
+                // Well since the row is no longer full, you can obviously add new letters...
+                canAddLetters = true;
                 lastLetterButton = (lettersAddedToRow > 0) ? gameGridButtons[currentRow][lettersAddedToRow - 1] : null;
             }
         }
         
        
+
 
 
         public void handleOkButtonClick() {
@@ -278,10 +318,11 @@ public class wordleMain extends Application {
             }
             System.out.println("Mot validé : " + word.toString());
 
+            // Unlock the user input
+            canAddLetters = true;
+
             // Vérifiez si la ligne actuelle est complète et peut être validée
-            if (lettersAddedToRow == 5) {
-                // Mettez à jour le temps écoulé
-                updateElapsedTime();
+            if (lettersAddedToRow == CellsCount) {
 
                 // Passez à la ligne suivante
                 currentRow++;
@@ -331,34 +372,16 @@ public class wordleMain extends Application {
         updateElapsedTime();
     }
 
+    // Always check if shit is null, otherwise you get a crash :(
     private void updateElapsedTime() {
         long currentTime = System.currentTimeMillis();
         long elapsedTime = (currentTime - startTime) / 1000;
-        elapsedTimeLabel.setText("Elapsed Time: " + elapsedTime + "s");
+        if (null != elapsedTimeLabel)
+            elapsedTimeLabel.setText("Elapsed Time: " + elapsedTime + "s");
     }
 
     public static void main(String[] args) {
         launch(args);
     }
-
-
-
-    public void setWordToFind(String wordToFind) {
-        this.wordToFind = wordToFind;
-    }
-
-    public String getWordToFind() {
-        return wordToFind;
-    }
-
-    public String getWordHint() {
-        return wordHint;
-    }
-
-    public void setWordHint(String wordHint) {
-        this.wordHint = wordHint;
-    }
-
-
 
 }
