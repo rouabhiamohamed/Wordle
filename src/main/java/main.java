@@ -20,9 +20,6 @@ public class main {
         Partie game = new Partie();
         game.jouer();
 
-
-
-
     }
 
 

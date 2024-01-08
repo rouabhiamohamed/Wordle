@@ -1,21 +1,22 @@
 package frontend;
 
-import java.util.ArrayList;
-
-import java.util.List;
-
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class wordleMain extends Application {
 
     private Stage mainMenuStage;
     private Label elapsedTimeLabel;
-    private final Button[][] gameGridButtons = new Button[5][5];
+    private Button[][] gameGridButtons;
+
+    private int CellsCount;
 
     private Stage gameStage;
     private long startTime;
@@ -30,25 +31,42 @@ public class wordleMain extends Application {
         mainMenuStage.setTitle("Menu Principal");
 
         // Start Game Button
-        Button startGameButton = new Button("Start WordleGame");
-        startGameButton.setStyle("-fx-background-color: orange;");
-        startGameButton.setOnAction(e -> createGameUI());
-        VBox mainMenuLayout = new VBox(10);
-        mainMenuLayout.setAlignment(Pos.CENTER);
-        mainMenuLayout.getChildren().add(startGameButton);
+        Button easyMode = new Button("Start a Worlde game in a 5x5 grid");
+        easyMode.setStyle("-fx-background-color: green;");
+        easyMode.setOnAction(e -> createGameUI(5));
+        // Added two new difficulties pick
+        Button medium = new Button("Start a Worlde game in a 6x5 grid");
+        medium.setStyle("-fx-background-color: orange;");
+        medium.setOnAction(e -> createGameUI(6));
 
-        Scene mainMenuScene = new Scene(mainMenuLayout, 400, 300);
+        Button hard = new Button("Start a Worlde game in a 8x5 grid");
+        hard.setStyle("-fx-background-color: red;");
+        hard.setOnAction(e -> createGameUI(8));
+
+
+        VBox mainMenuLayout = new VBox(30);
+        mainMenuLayout.setAlignment(Pos.CENTER);
+        mainMenuLayout.getChildren().add(easyMode);
+        mainMenuLayout.getChildren().add(medium);
+        mainMenuLayout.getChildren().add(hard);
+
+        Scene mainMenuScene = new Scene(mainMenuLayout, 800, 768);
         mainMenuStage.setScene(mainMenuScene);
         mainMenuStage.show();
     }
 
-    private void createGameUI() {
+    private void createGameUI(int Cells) {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
         gameStage.setTitle("Mon menu Wordle");
 
+        //I put the initialization of the grid here since I can't do it earlier...
+        //Cells means how wide, as for the 5 it means you have 5 chance to find the word
+        CellsCount = Cells;
+        gameGridButtons = new Button[5][CellsCount];
+
         BorderPane gameLayout = new BorderPane();
-        Scene gameScene = new Scene(gameLayout, 800, 600);
+        Scene gameScene = new Scene(gameLayout, 800, 768);
 
         // Build the game UI components using JavaFX controls
         MenuBar myMenuBar = new MenuBar();
@@ -76,10 +94,12 @@ public class wordleMain extends Application {
         GridPane gameGrid = new GridPane();
         gameGrid.setAlignment(Pos.CENTER);
 
-        int cellSize = Math.min((int) (gameScene.getWidth() - 100) / 5, (int) (gameScene.getHeight() - 100) / 5);
+        //int cellSize = Math.min((int) (gameScene.getWidth() - 100) / CellsCount, (int) (gameScene.getHeight() - 100) / CellsCount);
+        //Since everything is hardcoded, I didn't bother and just put values so it kinda looks okayish
+        int cellSize = Math.min((int) (gameScene.getWidth() - 100) / 8, (int) (gameScene.getHeight() - 100) / 8);
 
         for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 5; col++) {
+            for (int col = 0; col < CellsCount; col++) {
                 Button cellButton = new Button();
                 cellButton.setMinSize(cellSize, cellSize);
                 gameGridButtons[row][col] = cellButton;
@@ -185,19 +205,19 @@ public class wordleMain extends Application {
         return keyboardBox;
     }
 
-
-
+    //From what I understand, this code checks if we have finished a row or not, if so then it automatically
+    //Register the word...
     private void handleButtonClick(Button button) {
         if (virtualKeyboard.currentRow < 5) { // Permet la saisie uniquement dans la première ligne
             for (int row = 0; row < 5; row++) {
-                for (int col = 0; col < 5; col++) {
+                for (int col = 0; col < CellsCount; col++) {
                     if (gameGridButtons[row][col].getText().isEmpty()) {
                         gameGridButtons[row][col].setText(button.getText());
                         virtualKeyboard.lastLetterButton = gameGridButtons[row][col];
                         virtualKeyboard.lettersAddedToRow++;
 
                         // Si la ligne actuelle est complète:
-                        if (virtualKeyboard.lettersAddedToRow == 5) {
+                        if (virtualKeyboard.lettersAddedToRow == CellsCount) {
                             virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
                         }
 
