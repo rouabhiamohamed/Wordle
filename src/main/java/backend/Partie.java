@@ -17,6 +17,7 @@ public class Partie {
     private int tentative;
     private Scanner scanner;
     private Dico dictionnaire;
+
     private int[] couleurMot;
 
     // in order to save the current state of the game
@@ -84,42 +85,40 @@ public class Partie {
     // It will return -2 if the player lost
     // Otherwise it will return 0
     public int jouer(String mot_entre) {
-                //check if its in the dictionary and the extracted words from the url
-                boolean motTrouve = Dictionnaire(mot_entre);
-                if (!motTrouve) {
-                    return -1;
-                }
 
-                //increment the attempts only if the word entered have the same length as the word to find
-                if (mot_entre.length() == example.length()) {
-                    attempts++;
-                }
-                System.out.println("attempts used so far : " + attempts);
-                //condition of win when we find the word
-                if (mot_entre.equals(example)) {
-                    System.out.println("Bravo");
-                    return 1;
-                }
-                //if we didnt find the word and the attempts number reached 5
-                if (attempts == 5) {
-                    System.out.println("Perdu");
-                    return -2;
-                    //we cant enter word that have more letter than the word to find
-                }
-                // The frontend should check if the word is too large, therefore this is pointless
-                /*
-                else if (mot_entre.length() != example.length()) {
-                    System.out.println("Entrez un mot avec le même nombre de lettres.");
-                }
-                 */
-                //if the word we enter have the same length of the word to find we fill the array that show the color of each character depending of it posiiton
-                if (mot_entre.length() == example.length()) {
-                    tab_couleur(mot_entre);
-                }
+        // Small fix
+        mot_entre = mot_entre.toLowerCase();
+        //check if its in the dictionary and the extracted words from the url
+        boolean motTrouve = Dictionnaire(mot_entre);
+        if (!motTrouve) {
+            return -1;
+        }
 
-                return 0;
+        //increment the attempts only if the word entered have the same length as the word to find
+        if (mot_entre.length() == example.length()) {
+            attempts++;
+        }
+        System.out.println("attempts used so far : " + attempts);
+        //condition of win when we find the word
+        if (mot_entre.equals(example)) {
+            System.out.println("Bravo");
+            return 1;
+        }
+        //if we didnt find the word and the attempts number reached 5
+        if (attempts == 5) {
+            System.out.println("Perdu");
+            return -2;
+            //we cant enter word that have more letter than the word to find
+        }
+
+
+        //if the word we enter have the same length of the word to find we fill the array that show the color of each character depending of it posiiton
+        if (mot_entre.length() == example.length()) {
+            tab_couleur(mot_entre);
+        }
+
+        return 0;
     }
-
 
 //parse the url and extract words depending on the level chosen
     private ArrayList<String> parsing(String level) {
@@ -195,6 +194,10 @@ public class Partie {
 
     public void setExample(String example) {
         this.example = example;
+    }
+
+    public int[] getCouleurMot() {
+        return couleurMot;
     }
 
 

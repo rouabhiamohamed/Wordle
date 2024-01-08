@@ -342,6 +342,11 @@ public class wordleMain extends Application {
             else if (stateOfWord == 0)
             {
                 // Do stuff
+                for (int i = 0; game.getCouleurMot().length > i; i++)
+                {
+                    System.out.println(game.getCouleurMot()[i]);
+                }
+
             }
 
             // Right answer has been found
