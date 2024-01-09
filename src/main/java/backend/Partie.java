@@ -4,13 +4,24 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import  java.lang.String;
+
+/*
+
+
+    Original Author : Mohamed Rouabhia, Refactorer : Nassim Ezzaamari
+ */
 public class Partie {
     private ArrayList<String> tableauDeMots;
+
     private String example;
     private int tentative;
     private Scanner scanner;
     private Dico dictionnaire;
+
     private int[] couleurMot;
+
+    // in order to save the current state of the game
+    private int attempts;
 
 
     public Partie() {
@@ -20,79 +31,95 @@ public class Partie {
         dictionnaire = new Dico();
         couleurMot = new int[0];
     }
-     //method for playing
-    public void jouer() {
-        String level;
-        boolean rejouer = true;
-        while (rejouer) {
-            //difficulty choice
-            level = difficulte();
-            System.out.println("Vous avez choisi la difficulté : " + level);
-            //fill the arraylist of words
-            tableauDeMots = parsing(level);
-            Random random = new Random();
-            //get a random word that we will have to find
-            example = mot_random(random);
-            couleurMot = new int[example.length()];
-            System.out.println(example);
-            while (true) {
-                //the word that we enter
-                String mot_entre = entrer_mot();
-                //check if its in the dictionary and the extracted words from the url
-                boolean motTrouve = Dictionnaire(mot_entre);
 
-                if (!motTrouve ) {
+    /*So I've added this function to do the stuff that was done previously on a single big
+       function so I could properly use it in front end, anyways this function just sets up the difficulty
+       and starts the game
+     */
+    public void initialization(int Cells)
+    {
+        String level = levelIntToString(Cells);
+        System.out.println("Vous avez choisi la difficulté : " + level);
+        //fill the arraylist of words
+        tableauDeMots = parsing(level);
+        Random random = new Random();
+        //get a random word that we will have to find
+        example = mot_random(random);
+        couleurMot = new int[example.length()];
+        //Display the word to find out, you might want to remove it lol
+        System.out.println(example);
+    }
 
-                    continue;
-                }
-      //increment the attempts only if the word entered have the same length as the word to find
-                if (mot_entre.length() == example.length()) {
-                    tentative++;
-                }
-                System.out.println(tentative);
-                //condition of win when we find the word
-                if (mot_entre.equals(example)) {
-                    System.out.println("Bravo");
-                    break;
-                }
-                //if we didnt find the word and the attempts number reached 5
-                if (tentative == 5) {
-                    System.out.println("Perdu");
-                    break;
-                    //we cant enter word that have more letter than the word to find
-                } else if (mot_entre.length() != example.length()) {
-                    System.out.println("Entrez un mot avec le même nombre de lettres.");
-                }
-                //if the word we enter have the same length of the word to find we fill the array that show the color of each character depending of it posiiton
-                if (mot_entre.length() == example.length()) {
-                    tab_couleur(mot_entre);
-                }
-            }
-            //replaying
-            System.out.println("Voulez-vous rejouer (y/n)");
-            String choix = scanner.next();
-            if (choix.equalsIgnoreCase("n")) {
-                System.out.println("au revoir");
-                rejouer = false;
-            }
+
+    /*
+        Because seemingly you enjoy making stuff harder for no reason
+        I had to make this function in order to translate the "Cells" count into
+        a string...
+        Author : Ezzaamari Nassim
+     */
+    public String levelIntToString(int Cells)
+    {
+        switch (Cells) {
+            case 5:
+                return "f";
+            case 6:
+                return "m";
+            case 8:
+                return "d";
+            default:
+                return "f";
         }
     }
 
-//cchose the difficulty
-    public String difficulte() {
-        while (true) {
-            System.out.println("Choisissez la difficulté :");
-            System.out.println("Facile pour un mot de 5 lettres (appuyez sur 'f')");
-            System.out.println("Moyen pour un mot de 6 lettres (appuyez sur 'm')");
-            System.out.println("Difficile pour un mot de 8 lettres (appuyez sur 'd')");
-            String level = scanner.next();
-            if (level.equals("f") || level.equals("m") || level.equals("d")) {
-                return level;
-            } else {
-                System.out.println("Choix invalide. Veuillez choisir 'f', 'm' ou 'd'.");
-            }
+
+
+    //method for playing
+    // Nassim Ezzamaari Edit : Changes I've done, so because we need to link this function with the frontend, putting a while
+    // loop won't work out, this is why I've added new paramaters in order to save the state of the game
+    // therefore the frontend will simply call this function to do the work
+    // Besides I also removed the replay stuff since we're just going to destroy and recreate the object anyways
+    // Finally, I moved the initialization stuff elsewhere as well
+    // Actually, I made it so it returns an int, that way the front end knows what to do...
+    // It will return -1 if the word has been refused by the dictionnary
+    // It will return 1 if the word was the correct answer
+    // It will return -2 if the player lost
+    // Otherwise it will return 0
+    public int jouer(String mot_entre) {
+
+        // Small fix
+        mot_entre = mot_entre.toLowerCase();
+        //check if its in the dictionary and the extracted words from the url
+        boolean motTrouve = Dictionnaire(mot_entre);
+        if (!motTrouve) {
+            return -1;
         }
+
+        //increment the attempts only if the word entered have the same length as the word to find
+        if (mot_entre.length() == example.length()) {
+            attempts++;
+        }
+        System.out.println("attempts used so far : " + attempts);
+        //condition of win when we find the word
+        if (mot_entre.equals(example)) {
+            System.out.println("Bravo");
+            return 1;
+        }
+        //if we didnt find the word and the attempts number reached 5
+        if (attempts == 5) {
+            System.out.println("Perdu");
+            return -2;
+            //we cant enter word that have more letter than the word to find
+        }
+
+
+        //if the word we enter have the same length of the word to find we fill the array that show the color of each character depending of it posiiton
+        if (mot_entre.length() == example.length()) {
+            tab_couleur(mot_entre);
+        }
+
+        return 0;
     }
+
 //parse the url and extract words depending on the level chosen
     private ArrayList<String> parsing(String level) {
         Parser parser = new Parser();
@@ -105,11 +132,8 @@ public class Partie {
         int randomInt = random.nextInt((max - min) + 1) + min;
         return Accent.removeAccents(tableauDeMots.get(randomInt));
     }
-//to enter the word
-    public String entrer_mot() {
-        System.out.println("Entrer votre mot : ");
-        return scanner.next();
-    }
+
+
 //the dictionary where we check if its in the dictionary or from the url we parsed
     public boolean Dictionnaire(String word) {
         Parser parser = new Parser();
@@ -163,6 +187,20 @@ public class Partie {
             }
         }
     }
+
+    public String getExample() {
+        return example;
+    }
+
+    public void setExample(String example) {
+        this.example = example;
+    }
+
+    public int[] getCouleurMot() {
+        return couleurMot;
+    }
+
+
 }
 
 

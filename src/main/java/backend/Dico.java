@@ -9,7 +9,7 @@ public class Dico {
         ArrayList<String> lignes = new ArrayList<>();
         try {
             //create a File object representing the file "liste.txt"
-            File fichier = new File("backend/liste.txt");
+            File fichier = new File("./src/main/resources/liste.txt");
             //read from the file
             Scanner scanner = new Scanner(fichier);
             //read each line from the file and add it to the ArrayList

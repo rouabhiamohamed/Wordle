@@ -26,14 +26,22 @@ public class wordleMain extends Application {
     private Label elapsedTimeLabel;
     private Button[][] gameGridButtons;
 
-    private int CellsCount;
-
     private Stage gameStage;
     private long startTime;
     private final char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y'};
     private int nextLetterIndex = 0;
-
     private VirtualKeyboard virtualKeyboard; // Ajout d'une instance de VirtualKeyboard
+
+
+    // I added those so we could change the difficulty at will...
+    private int CellsCount;
+    // Contains the word to find, somehow this wasn't here already lol
+    private String wordToFind;
+    // This boolean is used so the program knows if it can add new letters or not
+    // it effectively blocks the input until the word gets registred
+    private boolean canAddLetters;
+    private String wordHint;
+    private Partie game;
 
     @Override
     public void start(Stage primaryStage) {
@@ -61,14 +69,25 @@ public class wordleMain extends Application {
         mainMenuLayout.getChildren().add(hard);
 
         Scene mainMenuScene = new Scene(mainMenuLayout, 800, 768);
-        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
-
-
-
         mainMenuStage.setScene(mainMenuScene);
         mainMenuStage.show();
+
+        // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateElapsedTime()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
     }
 
+    /*
+        So this function simply set some initial variables that are going to be used (hopefully)
+        several times within the runtime of this program
+     */
+    public void initializeSomeVariables()
+    {
+        wordToFind = game.getExample();
+        wordHint = Hint.getOneHint(wordToFind);
+    }
     private void createGameUI(int Cells) {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
@@ -79,21 +98,17 @@ public class wordleMain extends Application {
         CellsCount = Cells;
         gameGridButtons = new Button[5][CellsCount];
 
+        // Now that I think about it, we could put the CellsCount on the constructor instead
+        game = new Partie();
+        game.initialization(CellsCount);
+        initializeSomeVariables();
+
+        // Allow the user to input new letters
+        canAddLetters = true;
+
         BorderPane gameLayout = new BorderPane();
         Scene gameScene = new Scene(gameLayout, 800, 768);
-        gameScene.setOnKeyPressed(event -> {
-            String keyPressed = event.getText().toUpperCase();
-            if (null == KeyCode.getKeyCode(keyPressed)) {
 
-                virtualKeyboard.handleDeleteButtonClick();
-            } else {
-
-                virtualKeyboard.handleKeyPress(keyPressed);
-            }
-        });
-
-        gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
-        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
         // Build the game UI components using JavaFX controls
         MenuBar myMenuBar = new MenuBar();
         Menu gameMenu = new Menu("Game");
@@ -128,15 +143,10 @@ public class wordleMain extends Application {
             for (int col = 0; col < CellsCount; col++) {
                 Button cellButton = new Button();
                 cellButton.setMinSize(cellSize, cellSize);
-
-                cellButton.getStyleClass().add("cell-button");  // Ajout de la classe "cell-button"
-
                 gameGridButtons[row][col] = cellButton;
                 gameGrid.add(cellButton, col, row);
+
                 nextLetterIndex = (nextLetterIndex + 1) % letters.length;
-                GridPane.setMargin(cellButton, new Insets(5, 5, 5, 5)); // Ajustez les valeurs selon vos préférences
-
-
             }
         }
 
@@ -177,7 +187,22 @@ public class wordleMain extends Application {
             gameStage.close();
         });
 
-        scorePanel.getChildren().addAll(helpButton, restartButton,hintButton, backButton);
+        Button hintButton = new Button("Get Hint");
+        hintButton.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Wordle Hint");
+            alert.setHeaderText(null);
+            if (null == wordHint)
+                alert.setContentText("Please boot the python server in order to get the hint");
+            else
+                alert.setContentText("Here's your hint mate : " + wordHint);
+
+            alert.showAndWait();
+        });
+
+
+        scorePanel.getChildren().addAll(helpButton, restartButton, hintButton, backButton);
+
         gameLayout.setBottom(scorePanel);
 
         // Scores Panel
@@ -207,8 +232,6 @@ public class wordleMain extends Application {
         // Initialisez l'instance de VirtualKeyboard
         virtualKeyboard = new VirtualKeyboard();
     }
-
-
 
     private VBox createVirtualKeyboard() {
         VBox keyboardBox = new VBox(5);
@@ -272,7 +295,10 @@ public class wordleMain extends Application {
     //From what I understand, this code checks if we have finished a row or not, if so then it automatically
     //Register the word...
     private void handleButtonClick(Button button) {
-        if (virtualKeyboard.currentRow < 5) {
+        // If the word hasn't been validated then it can no longer register new words
+        if (!canAddLetters)
+            return;
+        if (virtualKeyboard.currentRow < 5) { // Permet la saisie uniquement dans la première ligne
             for (int row = 0; row < 5; row++) {
                 for (int col = 0; col < CellsCount; col++) {
                     if (gameGridButtons[row][col].getText().isEmpty()) {
@@ -362,21 +388,63 @@ public class wordleMain extends Application {
                 word.append(gameGridButtons[currentRow][col].getText());
             }
             System.out.println("Mot validé : " + word.toString());
+            int stateOfWord = game.jouer(word.toString());
 
-            if (lettersAddedToRow == 5) {
-                updateElapsedTime();
+            // The word has been refused by the dictionnary
+            // Make stuff red or some shit
+            if (stateOfWord == -1)
+            {
+                // Do stuff
+                return;
+            }
 
+            // Player has lost, technically this is handled here as well afaik
+            else if (stateOfWord == -2)
+            {
+                // Do stuff
+                return;
+            }
+
+            // Word has been accepted, thus it can do the rest of the function below :)
+            else if (stateOfWord == 0)
+            {
+                // Do stuff
+                for (int i = 0; game.getCouleurMot().length > i; i++)
+                {
+                    System.out.println(game.getCouleurMot()[i]);
+                }
+
+            }
+
+            // Right answer has been found
+            else if (stateOfWord == 1)
+            {
+                // Do stuff
+            }
+
+            // Unlock the user input
+            canAddLetters = true;
+
+            // Vérifiez si la ligne actuelle est complète et peut être validée
+            if (lettersAddedToRow == CellsCount) {
+
+                // Passez à la ligne suivante
                 currentRow++;
 
+                // Si toutes les lignes ont été remplies
                 if (currentRow == 5) {
                     System.out.println("Toutes les lignes ont été remplies. Fin du jeu !");
                 } else {
+                    // Effacez les lettres de la grille après avoir validé la ligne
                     clearGridLetters();
 
+                    // Réinitialisez les lettres ajoutées à la nouvelle ligne
                     lettersAddedToRow = 0;
+                    // Mettez à jour le dernier bouton pour la nouvelle ligne
                     lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow];
                 }
             } else {
+                // Affichez un message informant l'utilisateur de compléter la ligne actuelle
                 System.out.println("Veuillez compléter la ligne avant de passer à la suivante.");
             }
         }
@@ -387,7 +455,7 @@ public class wordleMain extends Application {
     }
 
     private void clearGridLetters() {
-        for (int col = 0; col < 5; col++) {
+        for (int col = 0; col < CellsCount; col++) {
             gameGridButtons[virtualKeyboard.currentRow][col].setText("");
         }
 
@@ -399,7 +467,7 @@ public class wordleMain extends Application {
 
     private void restartGame() {
         for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < 5; col++) {
+            for (int col = 0; col < CellsCount; col++) {
                 gameGridButtons[row][col].setText("");
             }
         }
@@ -408,13 +476,16 @@ public class wordleMain extends Application {
         updateElapsedTime();
     }
 
+    // Always check if shit is null, otherwise you get a crash :(
     private void updateElapsedTime() {
         long currentTime = System.currentTimeMillis();
         long elapsedTime = (currentTime - startTime) / 1000;
-        elapsedTimeLabel.setText("Elapsed Time: " + elapsedTime + "s");
+        if (null != elapsedTimeLabel)
+            elapsedTimeLabel.setText("Elapsed Time: " + elapsedTime + "s");
     }
 
     public static void main(String[] args) {
         launch(args);
     }
+
 }
