@@ -74,7 +74,7 @@ public class wordleMain extends Application {
         mainMenuStage.show();
 
         // Load the CSS
-        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/prog/src/main/java/frontend/styles.css");
 
 
         // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
@@ -126,7 +126,7 @@ public class wordleMain extends Application {
         });
 
         gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
-        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/prog/src/main/java/frontend/styles.css");
 
 
         // Build the game UI components using JavaFX controls
@@ -391,10 +391,7 @@ public class wordleMain extends Application {
 
                                 if (virtualKeyboard.lettersAddedToRow == CellsCount) {
                                     virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
-                                    for (int i = 0; i != CellsCount; i++) {
-                                        final int index = i;
-                                        Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
-                                    }
+
                                 }
 
                             return;
@@ -416,28 +413,34 @@ public class wordleMain extends Application {
 
             // The word has been refused by the dictionnary
             // Make stuff red or some shit
-            if (stateOfWord == -1)
-            {
-                // Do stuff
-                return;
+            if (stateOfWord == -1) {
+                // Coloriez toute la ligne en rouge
+                colorizeRow("red");
             }
 
-            // Player has lost, technically this is handled here as well afaik
-            else if (stateOfWord == -2)
-            {
-                // Do stuff
-                return;
+            // Si le mot a été accepté
+            else if (stateOfWord == 1) {
+                // Coloriez toute la ligne en vert
+                colorizeRow("green");
             }
 
-            // Word has been accepted, thus it can do the rest of the function below :)
-            else if (stateOfWord == 0)
-            {
-                // Do stuff
-                for (int i = 0; game.getCouleurMot().length > i; i++)
-                {
-                    System.out.println(game.getCouleurMot()[i]);
+            // Si le mot est correct, mais mal placé
+            else if (stateOfWord == 0) {
+                // Coloriez chaque cellule en fonction de game.getCouleurMot()[i]
+                for (int i = 0; i < game.getCouleurMot().length; i++) {
+                    switch (game.getCouleurMot()[i]) {
+                        case 0:
+                            colorizeCell(i, "gray");
+                            break;
+                        case 1:
+                            colorizeCell(i, "orange");
+                            break;
+                        case 2:
+                            colorizeCell(i, "green");
+                            break;
+                        // Ajoutez d'autres cas au besoin
+                    }
                 }
-
             }
 
             // Right answer has been found
@@ -472,10 +475,21 @@ public class wordleMain extends Application {
                 System.out.println("Veuillez compléter la ligne avant de passer à la suivante.");
             }
         }
+        private void colorizeRow(String color) {
+            for (int col = 0; col < CellsCount; col++) {
+                gameGridButtons[currentRow][col].getStyleClass().clear();
+                gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+                gameGridButtons[currentRow][col].getStyleClass().add(color);
+            }
+        }
+
+        private void colorizeCell(int col, String color) {
+            gameGridButtons[currentRow][col].getStyleClass().clear();
+            gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+            gameGridButtons[currentRow][col].getStyleClass().add(color);
+        }
 
 
-        
-       
     }
 
     private void clearGridLetters() {
