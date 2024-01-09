@@ -40,7 +40,7 @@ public class wordleMain extends Application {
     private String wordToFind;
     // This boolean is used so the program knows if it can add new letters or not
     // it effectively blocks the input until the word gets registred
-    private boolean canAddLetters;
+    private boolean canAddLetters = false;
     private String wordHint;
     private Partie game;
 
@@ -74,7 +74,7 @@ public class wordleMain extends Application {
         mainMenuStage.show();
 
         // Load the CSS
-        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+        mainMenuScene.getStylesheets().add("./src/main/resources/styles.css");
 
 
         // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
@@ -114,19 +114,25 @@ public class wordleMain extends Application {
 
         BorderPane gameLayout = new BorderPane();
         Scene gameScene = new Scene(gameLayout, 800, 768);
-        gameScene.setOnKeyPressed(event -> {
-            String keyPressed = event.getText().toUpperCase();
-            if (null == KeyCode.getKeyCode(keyPressed)) {
 
+
+        gameScene.setOnKeyPressed(event -> {
+            KeyCode keyCode = event.getCode();
+            System.out.println("Key pressed: " + keyCode);
+
+            if (keyCode == KeyCode.ENTER) {
+
+            } else if (keyCode == KeyCode.BACK_SPACE) {
                 virtualKeyboard.handleDeleteButtonClick();
             } else {
 
+                String keyPressed = event.getText();
                 virtualKeyboard.handleKeyPress(keyPressed);
             }
         });
 
         gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
-        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+        gameScene.getStylesheets().add("./src/main/resources/styles.css");
 
 
         // Build the game UI components using JavaFX controls
@@ -358,23 +364,22 @@ public class wordleMain extends Application {
         private int lettersAddedToRow = 0;
         public Button lastLetterButton;
 
+    
         public void handleDeleteButtonClick() {
             if (lastLetterButton != null && lettersAddedToRow > 0) {
                 lettersAddedToRow--;
-                lastLetterButton.setText("");  // Effacez la lettre du dernier bouton ajouté
-
-                // Mettez à jour lastLetterButton correctement
-                if (lettersAddedToRow > 0) {
-                    lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow - 1];
-                    canAddLetters = true;
-                } else {
-                    // Si la ligne est vide après la suppression, mettez à jour lastLetterButton pour pointer vers la première colonne
-                    lastLetterButton = gameGridButtons[currentRow][0];
-                }
+                gameGridButtons[currentRow][lettersAddedToRow].setText("");
+                lastLetterButton = (lettersAddedToRow > 0) ? gameGridButtons[currentRow][lettersAddedToRow - 1] : null;
+                canAddLetters = true;
             }
         }
 
+
+
+
         public void handleKeyPress(String keyPressed) {
+            if (!canAddLetters)
+                return;
             System.out.println( KeyCode.getKeyCode(keyPressed));
             if (virtualKeyboard.currentRow < 5) {
                 for (int row = 0; row < 5; row++) {
@@ -390,11 +395,7 @@ public class wordleMain extends Application {
                                 }
 
                                 if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-                                    virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
-                                    for (int i = 0; i != CellsCount; i++) {
-                                        final int index = i;
-                                        Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
-                                    }
+                                    canAddLetters = false;
                                 }
 
                             return;
@@ -449,9 +450,13 @@ public class wordleMain extends Application {
             // Unlock the user input
             canAddLetters = true;
 
+            for (int i = 0; i != CellsCount; i++) {
+                final int index = i;
+                Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
+            }
+
             // Vérifiez si la ligne actuelle est complète et peut être validée
             if (lettersAddedToRow == CellsCount) {
-                canAddLetters = false;
                 // Passez à la ligne suivante
                 currentRow++;
 
