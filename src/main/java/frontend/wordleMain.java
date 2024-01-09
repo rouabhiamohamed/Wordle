@@ -7,7 +7,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -46,6 +45,7 @@ public class wordleMain extends Application {
     private boolean canAddLetters;
     private String wordHint;
     private Partie game;
+    private boolean hasGameEnded;
 
     @Override
     public void start(Stage primaryStage) {
@@ -53,15 +53,15 @@ public class wordleMain extends Application {
         mainMenuStage.setTitle("Menu Principal");
 
         // Start Game Button
-        Button easyMode = new Button("Start a Worlde game in a 5x5 grid");
+        Button easyMode = new Button("Start a Wordle game in a 5x5 grid");
         easyMode.setStyle("-fx-background-color: green;");
         easyMode.setOnAction(e -> createGameUI(5));
         // Added two new difficulties pick
-        Button medium = new Button("Start a Worlde game in a 6x5 grid");
+        Button medium = new Button("Start a Wordle game in a 6x5 grid");
         medium.setStyle("-fx-background-color: orange;");
         medium.setOnAction(e -> createGameUI(6));
 
-        Button hard = new Button("Start a Worlde game in a 8x5 grid");
+        Button hard = new Button("Start a Wordle game in a 8x5 grid");
         hard.setStyle("-fx-background-color: red;");
         hard.setOnAction(e -> createGameUI(8));
 
@@ -84,6 +84,9 @@ public class wordleMain extends Application {
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateElapsedTime()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+
+        hasGameEnded = false;
+        canAddLetters = true;
 
     }
 
@@ -123,7 +126,10 @@ public class wordleMain extends Application {
         gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
-                System.out.println("Key pressed: " + keyEvent.getCode());
+                // If the game is over, there's no point listening to the keyboard inputs
+                if (hasGameEnded)
+                    return;
+
                 if (keyEvent.getCode() == KeyCode.ENTER)  {
 
                 }
@@ -220,6 +226,9 @@ public class wordleMain extends Application {
         backButton.getStyleClass().addAll("button-64");
 
         backButton.setOnAction(e -> {
+            // Resetting some global variables
+            canAddLetters = true;
+            hasGameEnded = false;
             mainMenuStage.show();
             gameStage.close();
         });
@@ -321,22 +330,13 @@ public class wordleMain extends Application {
 
         return keyboardBox;
     }
-    private void animateCellFlip(Button cellButton, int delay) {
-        Timeline timeline = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(
-                Duration.millis(delay * 200), // Délai multiplié par 100 pour créer un délai progressif
-                new KeyValue(cellButton.styleProperty(), "-fx-background-color: #90ee90;", Interpolator.LINEAR)
-        );
 
-        timeline.getKeyFrames().add(keyFrame);
-        timeline.play();
-    }
 
     //From what I understand, this code checks if we have finished a row or not, if so then it automatically
     //Register the word...
     private void handleButtonClick(Button button) {
         // If the word hasn't been validated then it can no longer register new words
-        if (!canAddLetters)
+        if (!canAddLetters || hasGameEnded)
             return;
         if (virtualKeyboard.currentRow < 5) { // Permet la saisie uniquement dans la première ligne
             for (int row = 0; row < 5; row++) {
@@ -353,13 +353,9 @@ public class wordleMain extends Application {
 
                         // Si la ligne actuelle est complète:
                         if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-                            virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
-                            for (int i = 0; i != CellsCount; i++) {
-                                final int index = i;
-                                Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
-                            }
-                        }
 
+                            canAddLetters = false;
+                        }
                         return;
                     }
                 }
@@ -376,28 +372,25 @@ public class wordleMain extends Application {
         public Button lastLetterButton;
 
         public void handleDeleteButtonClick() {
-            if (lastLetterButton != null && lettersAddedToRow > 0) {
-                lettersAddedToRow--;
-                lastLetterButton.setText("");  // Effacez la lettre du dernier bouton ajouté
+            if (hasGameEnded)
+                return;
 
-                // Mettez à jour lastLetterButton correctement
-                if (lettersAddedToRow > 0) {
-                    lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow - 1];
-                    canAddLetters = true;
-                } else {
-                    // Si la ligne est vide après la suppression, mettez à jour lastLetterButton pour pointer vers la première colonne
-                    lastLetterButton = gameGridButtons[currentRow][0];
-                }
+            if (lastLetterButton != null && lettersAddedToRow > 0) {
+                canAddLetters = true;
+                lettersAddedToRow--;
+                deColorizeRow();
+                gameGridButtons[currentRow][lettersAddedToRow].setText("");
+                lastLetterButton = (lettersAddedToRow > 0) ? gameGridButtons[currentRow][lettersAddedToRow - 1] : null;
             }
         }
 
 
 
 
+
         public void handleKeyPress(String keyPressed) {
-            if (!canAddLetters)
+            if (!canAddLetters || hasGameEnded)
                 return;
-            System.out.println( KeyCode.getKeyCode(keyPressed));
             if (virtualKeyboard.currentRow < 5) {
                 for (int row = 0; row < 5; row++) {
                     for (int col = 0; col < CellsCount; col++) {
@@ -425,69 +418,80 @@ public class wordleMain extends Application {
         }
 
         public void handleOkButtonClick() {
-            StringBuilder word = new StringBuilder();
-            for (int col = 0; col < lettersAddedToRow; col++) {
-                word.append(gameGridButtons[currentRow][col].getText());
-            }
-            System.out.println("Mot validé : " + word.toString());
-            int stateOfWord = game.jouer(word.toString());
+            if (hasGameEnded)
+                return;
 
-            // The word has been refused by the dictionnary
-            // Make stuff red or some shit
-            if (stateOfWord == -1) {
-                // Coloriez toute la ligne en rouge
-                colorizeRow("red");
-            }
+            /*
+                This is so the player can't just input twice the same word by pressing on OK twice
+             */
+            if (lettersAddedToRow == CellsCount) {
 
-            // Si le mot a été accepté
-            else if (stateOfWord == 1) {
-                // Coloriez toute la ligne en vert
-                colorizeRow("green");
-            }
 
-            // Si le mot est correct, mais mal placé
-            else if (stateOfWord == 0) {
-                // Coloriez chaque cellule en fonction de game.getCouleurMot()[i]
-                for (int i = 0; i < game.getCouleurMot().length; i++) {
-                    switch (game.getCouleurMot()[i]) {
-                        case 0:
-                            colorizeCell(i, "gray");
-                            break;
-                        case 1:
-                            colorizeCell(i, "orange");
-                            break;
-                        case 2:
-                            colorizeCell(i, "green");
-                            break;
-                        // Ajoutez d'autres cas au besoin
+                StringBuilder word = new StringBuilder();
+                for (int col = 0; col < lettersAddedToRow; col++) {
+                    word.append(gameGridButtons[currentRow][col].getText());
+                }
+                System.out.println("Mot validé : " + word.toString());
+                int stateOfWord = game.jouer(word.toString());
+
+                // The word has been refused by the dictionnary
+                // Make stuff red or some shit
+                if (stateOfWord == -1) {
+                    // Coloriez toute la ligne en rouge
+                    colorizeRow("red");
+                    return;
+                }
+
+                // If the answer has been found
+                if (stateOfWord == 1) {
+                    // Coloriez toute la ligne en vert
+                    colorizeRow("green");
+                    hasGameEnded = true;
+                    playerWon();
+                    return;
+                }
+
+                // Si le mot est correct, mais mal placé
+                if (stateOfWord == 0 || stateOfWord == -2) {
+                    // Coloriez chaque cellule en fonction de game.getCouleurMot()[i]
+                    for (int i = 0; i < game.getCouleurMot().length; i++) {
+                        switch (game.getCouleurMot()[i]) {
+                            case 0:
+                                colorizeCell(i, "gray");
+                                break;
+                            case 1:
+                                colorizeCell(i, "orange");
+                                break;
+                            case 2:
+                                colorizeCell(i, "green");
+                                break;
+                            // Ajoutez d'autres cas au besoin
+                        }
                     }
                 }
 
-            }
-
-            // Right answer has been found
-            else if (stateOfWord == 1)
-            {
-                // Do stuff
+                // If the player has lost
+                if (stateOfWord == -2)
+                {
+                    playerLost();
+                    hasGameEnded = true;
+                }
             }
 
             // Unlock the user input
             canAddLetters = true;
 
-            for (int i = 0; i != CellsCount; i++) {
-                final int index = i;
-                Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
-            }
 
             // Vérifiez si la ligne actuelle est complète et peut être validée
             if (lettersAddedToRow == CellsCount) {
-                canAddLetters = false;
                 // Passez à la ligne suivante
                 currentRow++;
 
                 // Si toutes les lignes ont été remplies
                 if (currentRow == 5) {
-                    System.out.println("Toutes les lignes ont été remplies. Fin du jeu !");
+                    //Technically the back end checks for that as well ...
+                    //For now I'll keep it, but it doesn't seem very useful...
+                    hasGameEnded = true;
                 } else {
                     // Effacez les lettres de la grille après avoir validé la ligne
                     clearGridLetters();
@@ -502,6 +506,15 @@ public class wordleMain extends Application {
                 System.out.println("Veuillez compléter la ligne avant de passer à la suivante.");
             }
         }
+
+        /*
+        We might want to use this in order to animate stuff a bit better...
+        for (int i = 0; i != CellsCount; i++) {
+            final int index = i;
+            Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
+        }
+         */
+
         private void colorizeRow(String color) {
             for (int col = 0; col < CellsCount; col++) {
                 gameGridButtons[currentRow][col].getStyleClass().clear();
@@ -514,6 +527,17 @@ public class wordleMain extends Application {
             gameGridButtons[currentRow][col].getStyleClass().clear();
             gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
             gameGridButtons[currentRow][col].getStyleClass().add(color);
+        }
+
+        /*
+            This function removes the style added, it's useful in the case of the player writing a wrong input
+            then he'd like to delete it, by using this function the line no longer remains red
+         */
+        private void deColorizeRow() {
+            for (int col = 0; col < CellsCount; col++) {
+                gameGridButtons[currentRow][col].getStyleClass().clear();
+                gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+            }
         }
 
 
@@ -530,15 +554,55 @@ public class wordleMain extends Application {
     }
 
 
+    /*
+        This function restart the game while keeping the same word
+        I removed previous one since it didn't seem to work properly at all
+     */
     private void restartGame() {
-        for (int row = 0; row < 5; row++) {
-            for (int col = 0; col < CellsCount; col++) {
-                gameGridButtons[row][col].setText("");
-            }
-        }
+        gameStage.close();
+        createGameUI(CellsCount);
+        hasGameEnded = false;
+        canAddLetters = true;
+    }
 
-        virtualKeyboard.lettersAddedToRow = 0;
-        updateElapsedTime();
+
+    private void animateCellFlip(Button cellButton, int delay) {
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(
+                Duration.millis(delay * 200), // Délai multiplié par 100 pour créer un délai progressif
+                new KeyValue(cellButton.styleProperty(), "-fx-background-color: #90ee90;", Interpolator.LINEAR)
+        );
+
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.play();
+    }
+
+    /*
+        This function is called when the player wins a match, for now it's just an alert
+        But ideally you can save stuff after this gets called
+     */
+    private void playerWon()
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Congratulations !");
+        alert.setHeaderText(null);
+        alert.setContentText("Congratulations !\nYou've successfully decoded this Wordle ! ");
+        alert.showAndWait();
+    }
+
+    /*
+        Same stuff but for the player losing.
+     */
+    private void playerLost()
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Too bad !");
+        alert.setHeaderText(null);
+        alert.setContentText("Almost there ! You gave it a good try but couldn't crack this Wordle. " +
+                "Wanna try again ?");
+                // Oh and besides the word to find out was " +
+                //wordToFind);
+        alert.showAndWait();
     }
 
     // Always check if shit is null, otherwise you get a crash :(

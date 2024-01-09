@@ -39,7 +39,6 @@ public class Partie {
     public void initialization(int Cells)
     {
         String level = levelIntToString(Cells);
-        System.out.println("Vous avez choisi la difficulté : " + level);
         //fill the arraylist of words
         tableauDeMots = parsing(level);
         Random random = new Random();
@@ -55,7 +54,6 @@ public class Partie {
         Because seemingly you enjoy making stuff harder for no reason
         I had to make this function in order to translate the "Cells" count into
         a string...
-        Author : Ezzaamari Nassim
      */
     public String levelIntToString(int Cells)
     {
@@ -98,7 +96,7 @@ public class Partie {
         if (mot_entre.length() == example.length()) {
             attempts++;
         }
-        System.out.println("attempts used so far : " + attempts);
+        //System.out.println("attempts used so far : " + attempts);
         //condition of win when we find the word
         if (mot_entre.equals(example)) {
             System.out.println("Bravo");
@@ -178,6 +176,7 @@ public class Partie {
         //we display the array with what we filled in the previous for loops
         for (int i = 0; i < mot_entre.length(); i++) {
             int currentCharColor = couleurMot[i];
+            /*
             if (currentCharColor == 1) {
                 System.out.println("Orange " + i);
             } else if (currentCharColor == 2) {
@@ -185,6 +184,7 @@ public class Partie {
             } else {
                 System.out.println("Gris " + i);
             }
+             */
         }
     }
 
