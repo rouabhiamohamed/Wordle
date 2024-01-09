@@ -8,11 +8,13 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -93,6 +95,7 @@ public class wordleMain extends Application {
         wordToFind = game.getExample();
         wordHint = Hint.getOneHint(wordToFind);
     }
+
     private void createGameUI(int Cells) {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
@@ -116,20 +119,31 @@ public class wordleMain extends Application {
         Scene gameScene = new Scene(gameLayout, 800, 768);
 
 
-        gameScene.setOnKeyPressed(event -> {
-            KeyCode keyCode = event.getCode();
-            System.out.println("Key pressed: " + keyCode);
 
-            if (keyCode == KeyCode.ENTER) {
+        gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                System.out.println("Key pressed: " + keyEvent.getCode());
+                if (keyEvent.getCode() == KeyCode.ENTER)  {
 
-            } else if (keyCode == KeyCode.BACK_SPACE) {
-                virtualKeyboard.handleDeleteButtonClick();
-            } else {
-
-                String keyPressed = event.getText();
-                virtualKeyboard.handleKeyPress(keyPressed);
+                }
+                else if (keyEvent.getCode()  == KeyCode.BACK_SPACE)
+                {
+                    virtualKeyboard.handleDeleteButtonClick();
+                }
+                else
+                {
+                    String keyText = keyEvent.getText().toUpperCase();
+                    // In order to check if player isn't inputing ALT or caps lock or stuff like that
+                    if (!keyText.isEmpty() && keyText.charAt(0) >= 'A' && keyText.charAt(0) <= 'Z') {
+                        virtualKeyboard.handleKeyPress(keyText);
+                    }
+                }
             }
         });
+
+
+
 
         gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
         gameScene.getStylesheets().add("./src/main/resources/styles.css");
