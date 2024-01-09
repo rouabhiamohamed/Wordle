@@ -1,26 +1,24 @@
 package frontend;
 
-import backend.Hint;
-import backend.Partie;
+import javafx.animation.*;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.scene.effect.Reflection;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
-
-/*
-    Author : Marieme Soda MBEGUERE
-    Merger : Nassim Ezzaamari
- */
 
 public class wordleMain extends Application {
 
@@ -161,6 +159,8 @@ public class wordleMain extends Application {
 
         // Help Button
         Button helpButton = new Button("Help");
+        helpButton.getStyleClass().addAll("button-64");
+
         helpButton.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Wordle Help");
@@ -171,10 +171,17 @@ public class wordleMain extends Application {
 
         // Restart Button
         Button restartButton = new Button("Restart");
+        restartButton.getStyleClass().addAll("button-64");
+
         restartButton.setOnAction(e -> restartGame());
+
+        Button hintButton = new Button("Get Hint");
+        hintButton.getStyleClass().addAll("button-64");
 
         // Back to Menu Button
         Button backButton = new Button("Back to Menu");
+        backButton.getStyleClass().addAll("button-64");
+
         backButton.setOnAction(e -> {
             mainMenuStage.show();
             gameStage.close();
@@ -203,9 +210,19 @@ public class wordleMain extends Application {
         scoreInfoPanel.setAlignment(Pos.CENTER);
 
         elapsedTimeLabel = new Label("Elapsed Time: 0s");
+        elapsedTimeLabel.getStyleClass().add("text");
         scoreInfoPanel.getChildren().add(elapsedTimeLabel);
 
-        scoreInfoPanel.getChildren().addAll(new Label("Win Streak:"), new Button("High Scores"), new Button("Save High Scores"));
+        Button highScore = new Button("High Scores");
+        highScore.getStyleClass().addAll("button-64");
+
+        Button saveScore = new Button("Save High Scores");
+        saveScore.getStyleClass().addAll("button-64");
+
+        Label winStreak = new Label("Win Streak:");
+        winStreak.getStyleClass().addAll("text");
+
+        scoreInfoPanel.getChildren().addAll(winStreak,highScore,saveScore );
         gameLayout.setTop(scoreInfoPanel);
 
         gameStage.setScene(gameScene);
@@ -230,20 +247,21 @@ public class wordleMain extends Application {
                 if (currentChar <= 'Z') {
                     Button letterButton = new Button(String.valueOf(currentChar));
                     letterButton.setMinSize(40, 40);
+                    letterButton.getStyleClass().add("button-keyboard");
                     letterButton.setOnAction(e -> handleButtonClick(letterButton));
                     rowBox.getChildren().add(letterButton);
                     currentChar++;
                 }
             }
 
-            // Ajouter le bouton OK apres Z
+            // Ajouter le bouton OK après Z
             if (i == 2) {
                 Button okButton = new Button("OK");
                 okButton.setMinSize(40, 40);
+                okButton.getStyleClass().add("ok-button");
                 okButton.setOnAction(e -> virtualKeyboard.handleOkButtonClick());
                 rowBox.getChildren().add(okButton);
             }
-
 
             keyboardBox.getChildren().add(rowBox);
         }
@@ -254,6 +272,7 @@ public class wordleMain extends Application {
 
         Button deleteButton = new Button("Supprimer");
         deleteButton.setMinSize(40, 40);
+        deleteButton.getStyleClass().add("delete-button");
         deleteButton.setOnAction(e -> virtualKeyboard.handleDeleteButtonClick());
 
         additionalButtonsBox.getChildren().addAll(deleteButton);
@@ -261,6 +280,16 @@ public class wordleMain extends Application {
         keyboardBox.getChildren().add(additionalButtonsBox);
 
         return keyboardBox;
+    }
+    private void animateCellFlip(Button cellButton, int delay) {
+        Timeline timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(
+                Duration.millis(delay * 200), // Délai multiplié par 100 pour créer un délai progressif
+                new KeyValue(cellButton.styleProperty(), "-fx-background-color: #90ee90;", Interpolator.LINEAR)
+        );
+
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.play();
     }
 
     //From what I understand, this code checks if we have finished a row or not, if so then it automatically
@@ -277,18 +306,25 @@ public class wordleMain extends Application {
                         virtualKeyboard.lastLetterButton = gameGridButtons[row][col];
                         virtualKeyboard.lettersAddedToRow++;
 
+                        // Mettez à jour lastLetterButton correctement
+                        if (virtualKeyboard.lettersAddedToRow < CellsCount) {
+                            virtualKeyboard.lastLetterButton = gameGridButtons[row][col + 1];
+                        }
+
                         // Si la ligne actuelle est complète:
                         if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-                            // And user press Enter Key, then allow it
-                            canAddLetters = false;
-                             //virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
+                            virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
+                            for (int i = 0; i != CellsCount; i++) {
+                                final int index = i;
+                                Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
+                            }
                         }
+
                         return;
                     }
                 }
             }
         } else {
-            // L'utilisateur ne peut plus ajouter de lettres après avoir validé la première ligne
             System.out.println("Vous ne pouvez plus ajouter de lettres après avoir validé la première ligne.");
         }
     }
@@ -303,19 +339,50 @@ public class wordleMain extends Application {
             if (lastLetterButton != null && lettersAddedToRow > 0) {
                 lettersAddedToRow--;
                 lastLetterButton.setText("");  // Effacez la lettre du dernier bouton ajouté
-                // Well since the row is no longer full, you can obviously add new letters...
-                canAddLetters = true;
-                lastLetterButton = (lettersAddedToRow > 0) ? gameGridButtons[currentRow][lettersAddedToRow - 1] : null;
+
+                // Mettez à jour lastLetterButton correctement
+                if (lettersAddedToRow > 0) {
+                    lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow - 1];
+                } else {
+                    // Si la ligne est vide après la suppression, mettez à jour lastLetterButton pour pointer vers la première colonne
+                    lastLetterButton = gameGridButtons[currentRow][0];
+                }
             }
         }
-        
-       
 
+        public void handleKeyPress(String keyPressed) {
+            System.out.println( KeyCode.getKeyCode(keyPressed));
+            if (virtualKeyboard.currentRow < 5) {
+                for (int row = 0; row < 5; row++) {
+                    for (int col = 0; col < CellsCount; col++) {
+                        if (gameGridButtons[row][col].getText().isEmpty()) {
 
+                                gameGridButtons[row][col].setText(keyPressed);
+                                virtualKeyboard.lastLetterButton = gameGridButtons[row][col];
+                                virtualKeyboard.lettersAddedToRow++;
+
+                                if (virtualKeyboard.lettersAddedToRow < CellsCount) {
+                                    virtualKeyboard.lastLetterButton = gameGridButtons[row][col + 1];
+                                }
+
+                                if (virtualKeyboard.lettersAddedToRow == CellsCount) {
+                                    virtualKeyboard.handleOkButtonClick();  // Validez automatiquement la ligne
+                                    for (int i = 0; i != CellsCount; i++) {
+                                        final int index = i;
+                                        Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
+                                    }
+                                }
+
+                            return;
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Vous ne pouvez plus ajouter de lettres après avoir validé la première ligne.");
+            }
+        }
 
         public void handleOkButtonClick() {
-            // Validez le mot et passage a la ligne suivante automatiquement par le bouton ok
-          
             StringBuilder word = new StringBuilder();
             for (int col = 0; col < lettersAddedToRow; col++) {
                 word.append(gameGridButtons[currentRow][col].getText());

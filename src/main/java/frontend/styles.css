@@ -1,0 +1,95 @@
+.button {
+    -fx-background-color: #f0f0f0; /* Background color for normal buttons */
+    -fx-border-color: #000000;
+    -fx-font-size: 18; /* Font size for letters */
+}
+.button-keyboard {
+      -fx-width: 43px;
+         -fx-height: 60px;
+         -fx-cursor: hand; /* JavaFX utilise 'hand' au lieu de 'pointer' */
+         -fx-margin: 2px;
+         -fx-font-size: 22px;
+         -fx-font-weight: bold; /* '700' en CSS est équivalent à 'bold' en JavaFX */
+         -fx-text-fill: #fff; /* 'color' en CSS est équivalent à 'text-fill' en JavaFX */
+         -fx-background-color: #636363;
+         -fx-border-radius: 6px;
+         -fx-border-color: transparent;
+         -fx-border-width: 0;
+
+}
+
+.ok-button {
+    -fx-background-color: #5cb85c;
+    -fx-border-color: #4cae4c;
+     -fx-border-radius: 10;
+    -fx-font-size: 14;
+}
+
+.delete-button {
+    -fx-background-color: #d9534f;
+    -fx-border-color: #d43f3a;
+    -fx-font-size: 14;
+}
+
+.cell-button {
+   -fx-background-color:#4d4d4d;
+   -fx-border-color: #a0a0a0;
+   -fx-border-radius: 10;
+   -fx-text-fill: white;
+   -fx-font-weight: bold;
+    -fx-font-size: 24px !important;
+
+}
+
+.cell-button.flipped {
+    -fx-background-color: #90ee90; /* Couleur lorsqu'il est retourné (flipped) */
+    -fx-border-color: #008000; /* Bordure verte lorsque retourné */
+
+}
+.button-keyboard:pressed {
+    -fx-background-color: #a9a9a9; /* Couleur lorsqu'on clique */
+}
+.cell-button.correct {
+    -fx-background-color: #ffff00; /* Couleur lorsqu'il est correct mais mal placé */
+    -fx-border-color: #808000; /* Bordure jaune lorsque correct mais mal placé */
+}
+.button-64 {
+    -fx-alignment: center;
+    -fx-background-color: #EEE6D8;
+    -fx-border-width: 0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+
+    -fx-box-sizing: border-box;
+    -fx-text-fill: black;
+    -fx-display: flex;
+    -fx-font-family: "Phantomsans", sans-serif;
+    -fx-font-size: 20px;
+    -fx-justify-content: center;
+    -fx-line-height: 1em;
+    -fx-max-width: 100%;
+    -fx-min-width: 140px;
+    -fx-padding: 3px;
+    -fx-text-decoration: none;
+    -fx-user-select: none;
+    -fx-touch-action: manipulation;
+    -fx-white-space: nowrap;
+    -fx-cursor: hand; /* Utiliser 'hand' pour le curseur en JavaFX */
+}
+
+.button-64:hover {
+    -fx-background-color: transparent;
+}
+
+.text {
+    -fx-text-fill: white;
+     -fx-font-size: 16px;
+}
+
+.cell-button.letter-cell {
+    -fx-border-color: black;
+    -fx-border-width: 1px;
+}
+
+
+
