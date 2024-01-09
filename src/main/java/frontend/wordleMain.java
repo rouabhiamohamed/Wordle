@@ -1,6 +1,11 @@
 package frontend;
 
-import javafx.animation.*;
+import backend.Hint;
+import backend.Partie;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -8,16 +13,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.effect.Reflection;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 
 public class wordleMain extends Application {
@@ -72,6 +73,10 @@ public class wordleMain extends Application {
         mainMenuStage.setScene(mainMenuScene);
         mainMenuStage.show();
 
+        // Load the CSS
+        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+
+
         // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateElapsedTime()));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -106,8 +111,23 @@ public class wordleMain extends Application {
         // Allow the user to input new letters
         canAddLetters = true;
 
+
         BorderPane gameLayout = new BorderPane();
         Scene gameScene = new Scene(gameLayout, 800, 768);
+        gameScene.setOnKeyPressed(event -> {
+            String keyPressed = event.getText().toUpperCase();
+            if (null == KeyCode.getKeyCode(keyPressed)) {
+
+                virtualKeyboard.handleDeleteButtonClick();
+            } else {
+
+                virtualKeyboard.handleKeyPress(keyPressed);
+            }
+        });
+
+        gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
+        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/groupe-8-thebigmerge/src/main/java/frontend/styles.css");
+
 
         // Build the game UI components using JavaFX controls
         MenuBar myMenuBar = new MenuBar();
@@ -143,10 +163,12 @@ public class wordleMain extends Application {
             for (int col = 0; col < CellsCount; col++) {
                 Button cellButton = new Button();
                 cellButton.setMinSize(cellSize, cellSize);
+
+                cellButton.getStyleClass().add("cell-button");  // Ajout de la classe "cell-button"
                 gameGridButtons[row][col] = cellButton;
                 gameGrid.add(cellButton, col, row);
-
                 nextLetterIndex = (nextLetterIndex + 1) % letters.length;
+                GridPane.setMargin(cellButton, new Insets(5, 5, 5, 5)); // Ajustez les valeurs selon vos préférences
             }
         }
 
@@ -175,8 +197,6 @@ public class wordleMain extends Application {
 
         restartButton.setOnAction(e -> restartGame());
 
-        Button hintButton = new Button("Get Hint");
-        hintButton.getStyleClass().addAll("button-64");
 
         // Back to Menu Button
         Button backButton = new Button("Back to Menu");
@@ -188,6 +208,9 @@ public class wordleMain extends Application {
         });
 
         Button hintButton = new Button("Get Hint");
+        hintButton.getStyleClass().addAll("button-64");
+
+
         hintButton.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Wordle Hint");
@@ -343,6 +366,7 @@ public class wordleMain extends Application {
                 // Mettez à jour lastLetterButton correctement
                 if (lettersAddedToRow > 0) {
                     lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow - 1];
+                    canAddLetters = true;
                 } else {
                     // Si la ligne est vide après la suppression, mettez à jour lastLetterButton pour pointer vers la première colonne
                     lastLetterButton = gameGridButtons[currentRow][0];
@@ -427,7 +451,7 @@ public class wordleMain extends Application {
 
             // Vérifiez si la ligne actuelle est complète et peut être validée
             if (lettersAddedToRow == CellsCount) {
-
+                canAddLetters = false;
                 // Passez à la ligne suivante
                 currentRow++;
 
