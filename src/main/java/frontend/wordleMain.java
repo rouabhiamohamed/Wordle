@@ -8,13 +8,11 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -42,7 +40,7 @@ public class wordleMain extends Application {
     private String wordToFind;
     // This boolean is used so the program knows if it can add new letters or not
     // it effectively blocks the input until the word gets registred
-    private boolean canAddLetters = false;
+    private boolean canAddLetters;
     private String wordHint;
     private Partie game;
 
@@ -95,7 +93,6 @@ public class wordleMain extends Application {
         wordToFind = game.getExample();
         wordHint = Hint.getOneHint(wordToFind);
     }
-
     private void createGameUI(int Cells) {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
@@ -141,9 +138,6 @@ public class wordleMain extends Application {
                 }
             }
         });
-
-
-
 
         gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
         gameScene.getStylesheets().add("./src/main/resources/styles.css");
@@ -378,13 +372,19 @@ public class wordleMain extends Application {
         private int lettersAddedToRow = 0;
         public Button lastLetterButton;
 
-    
         public void handleDeleteButtonClick() {
             if (lastLetterButton != null && lettersAddedToRow > 0) {
                 lettersAddedToRow--;
-                gameGridButtons[currentRow][lettersAddedToRow].setText("");
-                lastLetterButton = (lettersAddedToRow > 0) ? gameGridButtons[currentRow][lettersAddedToRow - 1] : null;
-                canAddLetters = true;
+                lastLetterButton.setText("");  // Effacez la lettre du dernier bouton ajouté
+
+                // Mettez à jour lastLetterButton correctement
+                if (lettersAddedToRow > 0) {
+                    lastLetterButton = gameGridButtons[currentRow][lettersAddedToRow - 1];
+                    canAddLetters = true;
+                } else {
+                    // Si la ligne est vide après la suppression, mettez à jour lastLetterButton pour pointer vers la première colonne
+                    lastLetterButton = gameGridButtons[currentRow][0];
+                }
             }
         }
 
@@ -431,26 +431,33 @@ public class wordleMain extends Application {
 
             // The word has been refused by the dictionnary
             // Make stuff red or some shit
-            if (stateOfWord == -1)
-            {
-                // Do stuff
-                return;
+            if (stateOfWord == -1) {
+                // Coloriez toute la ligne en rouge
+                colorizeRow("red");
             }
 
-            // Player has lost, technically this is handled here as well afaik
-            else if (stateOfWord == -2)
-            {
-                // Do stuff
-                return;
+            // Si le mot a été accepté
+            else if (stateOfWord == 1) {
+                // Coloriez toute la ligne en vert
+                colorizeRow("green");
             }
 
-            // Word has been accepted, thus it can do the rest of the function below :)
-            else if (stateOfWord == 0)
-            {
-                // Do stuff
-                for (int i = 0; game.getCouleurMot().length > i; i++)
-                {
-                    System.out.println(game.getCouleurMot()[i]);
+            // Si le mot est correct, mais mal placé
+            else if (stateOfWord == 0) {
+                // Coloriez chaque cellule en fonction de game.getCouleurMot()[i]
+                for (int i = 0; i < game.getCouleurMot().length; i++) {
+                    switch (game.getCouleurMot()[i]) {
+                        case 0:
+                            colorizeCell(i, "gray");
+                            break;
+                        case 1:
+                            colorizeCell(i, "orange");
+                            break;
+                        case 2:
+                            colorizeCell(i, "green");
+                            break;
+                        // Ajoutez d'autres cas au besoin
+                    }
                 }
 
             }
@@ -471,6 +478,7 @@ public class wordleMain extends Application {
 
             // Vérifiez si la ligne actuelle est complète et peut être validée
             if (lettersAddedToRow == CellsCount) {
+                canAddLetters = false;
                 // Passez à la ligne suivante
                 currentRow++;
 
@@ -491,10 +499,21 @@ public class wordleMain extends Application {
                 System.out.println("Veuillez compléter la ligne avant de passer à la suivante.");
             }
         }
+        private void colorizeRow(String color) {
+            for (int col = 0; col < CellsCount; col++) {
+                gameGridButtons[currentRow][col].getStyleClass().clear();
+                gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+                gameGridButtons[currentRow][col].getStyleClass().add(color);
+            }
+        }
+
+        private void colorizeCell(int col, String color) {
+            gameGridButtons[currentRow][col].getStyleClass().clear();
+            gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+            gameGridButtons[currentRow][col].getStyleClass().add(color);
+        }
 
 
-        
-       
     }
 
     private void clearGridLetters() {

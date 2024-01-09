@@ -37,7 +37,7 @@
    -fx-border-radius: 10;
    -fx-text-fill: white;
    -fx-font-weight: bold;
-    -fx-font-size: 24px !important;
+   -fx-font-size: 24px !important;
 
 }
 
@@ -89,6 +89,50 @@
 .cell-button.letter-cell {
     -fx-border-color: black;
     -fx-border-width: 1px;
+}
+
+.cell-button.red {
+    -fx-background-color: #FF0000;
+    -fx-background-radius: 10;
+     -fx-border-color: #a0a0a0;
+       -fx-border-radius: 10;
+       -fx-text-fill: white;
+       -fx-font-weight: bold;
+       -fx-font-size: 24px !important;
+
+}
+
+.cell-button.green {
+    -fx-background-color: #00FF00;
+    -fx-background-radius: 10;
+     -fx-border-color: #a0a0a0;
+       -fx-border-radius: 10;
+       -fx-text-fill: white;
+       -fx-font-weight: bold;
+       -fx-font-size: 24px !important;
+
+}
+
+.cell-button.gray {
+    -fx-background-color: #808080;
+    -fx-background-radius: 10;
+     -fx-border-color: #a0a0a0;
+       -fx-border-radius: 10;
+       -fx-text-fill: white;
+       -fx-font-weight: bold;
+
+       -fx-font-size: 24px !important;
+}
+
+.cell-button.orange {
+    -fx-background-color: #FFA500;
+    -fx-background-radius: 10;
+     -fx-border-color: #a0a0a0;
+       -fx-border-radius: 10;
+       -fx-text-fill: white;
+       -fx-font-weight: bold;
+       -fx-font-size: 24px !important;
+
 }
 
 
