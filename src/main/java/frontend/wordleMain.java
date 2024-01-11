@@ -46,6 +46,8 @@ public class wordleMain extends Application {
     // Contains a reference to the buttons, it's done this way in order to add the CSS
     // Even if we input through keyboard
     public Button[] arrayOfButtons = new Button[100];
+    // 5 Since there are only 5 rows...
+    public HBox[] arrayOfRows = new HBox[5];
 
     @Override
     public void start(Stage primaryStage) {
@@ -146,10 +148,9 @@ public class wordleMain extends Application {
                         // Simulate a click
                         arrayOfButtons[keyText.charAt(0)].fire();
                         arrayOfButtons[keyText.charAt(0)].getStyleClass().add("button-keyboard-pressed");
-                        // Create a PauseTransition of 100ms
-                        PauseTransition pause = new PauseTransition(Duration.millis(100));
+
+                        PauseTransition pause = new PauseTransition(Duration.millis(200));
                         pause.setOnFinished(event -> {
-                            // Reset the style after 100ms
                             arrayOfButtons[keyText.charAt(0)].getStyleClass().remove("button-keyboard-pressed");
                         });
 
@@ -304,7 +305,6 @@ public class wordleMain extends Application {
             rowBox.setAlignment(Pos.CENTER);
 
             char currentChar = (char) ('A' + i * 9);
-
             for (int j = 0; j < 9; j++) {
                 if (currentChar <= 'Z') {
                     Button letterButton = new Button(String.valueOf(currentChar));
@@ -421,6 +421,7 @@ public class wordleMain extends Application {
                 if (stateOfWord == -1) {
                     // Coloriez toute la ligne en rouge
                     colorizeRow("red");
+                    shakeRow(currentRow);
                     return;
                 }
 
@@ -544,6 +545,18 @@ public class wordleMain extends Application {
                 gameGridButtons[currentRow][col].getStyleClass().remove("red");
             }
         }
+
+        private void shakeRow(int rowToShake) {
+            for (int i = 0; i < gameGridButtons[rowToShake].length; i++) {
+                TranslateTransition shakeTransition = new TranslateTransition(Duration.millis(100), gameGridButtons[rowToShake][i]);
+                shakeTransition.setFromX(-20);
+                shakeTransition.setByX(20); // Amount to move left and right
+                shakeTransition.setCycleCount(5); // Determines how many times it moves back and forth
+                shakeTransition.setAutoReverse(true); // Makes the transition reverse automatically
+                shakeTransition.play();
+            }
+        }
+
 
 
     }
