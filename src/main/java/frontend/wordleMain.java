@@ -425,14 +425,6 @@ public class wordleMain extends Application {
                     return;
                 }
 
-                // If the answer has been found
-                if (stateOfWord == 1) {
-                    // Coloriez toute la ligne en vert
-                    colorizeRow("green");
-                    hasGameEnded = true;
-                    playerWon();
-                    return;
-                }
 
                 // Si le mot est correct, mais mal placé
                 if (stateOfWord == 0 || stateOfWord == -2) {
@@ -457,6 +449,15 @@ public class wordleMain extends Application {
                             // Ajoutez d'autres cas au besoin
                         }
                     }
+                }
+
+                // If the answer has been found
+                if (stateOfWord == 1) {
+                    // Coloriez toute la ligne en vert
+                    colorizeRow("green");
+                    hasGameEnded = true;
+                    playerWon();
+                    return;
                 }
 
                 // If the player has lost
