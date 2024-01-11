@@ -2,10 +2,7 @@ package frontend;
 
 import backend.Hint;
 import backend.Partie;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -46,6 +43,9 @@ public class wordleMain extends Application {
     private String wordHint;
     private Partie game;
     private boolean hasGameEnded;
+    // Contains a reference to the buttons, it's done this way in order to add the CSS
+    // Even if we input through keyboard
+    public Button[] arrayOfButtons = new Button[100];
 
     @Override
     public void start(Stage primaryStage) {
@@ -131,7 +131,7 @@ public class wordleMain extends Application {
                     return;
 
                 if (keyEvent.getCode() == KeyCode.ENTER)  {
-
+                    System.out.println("gg");
                 }
                 else if (keyEvent.getCode()  == KeyCode.BACK_SPACE)
                 {
@@ -142,7 +142,20 @@ public class wordleMain extends Application {
                     String keyText = keyEvent.getText().toUpperCase();
                     // In order to check if player isn't inputing ALT or caps lock or stuff like that
                     if (!keyText.isEmpty() && keyText.charAt(0) >= 'A' && keyText.charAt(0) <= 'Z') {
-                        virtualKeyboard.handleKeyPress(keyText);
+                        //virtualKeyboard.handleKeyPress(keyText);
+                        // Simulate a click
+                        arrayOfButtons[keyText.charAt(0)].fire();
+                        arrayOfButtons[keyText.charAt(0)].getStyleClass().add("button-keyboard-pressed");
+                        // Create a PauseTransition of 100ms
+                        PauseTransition pause = new PauseTransition(Duration.millis(100));
+                        pause.setOnFinished(event -> {
+                            // Reset the style after 100ms
+                            arrayOfButtons[keyText.charAt(0)].getStyleClass().remove("button-keyboard-pressed");
+                        });
+
+                        // Start the PauseTransition
+                        pause.play();
+
                     }
                 }
             }
@@ -299,6 +312,7 @@ public class wordleMain extends Application {
                     letterButton.getStyleClass().add("button-keyboard");
                     letterButton.setOnAction(e -> handleButtonClick(letterButton));
                     rowBox.getChildren().add(letterButton);
+                    arrayOfButtons[currentChar] = letterButton;
                     currentChar++;
                 }
             }
@@ -353,7 +367,6 @@ public class wordleMain extends Application {
 
                         // Si la ligne actuelle est complète:
                         if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-
                             canAddLetters = false;
                         }
                         return;
@@ -371,6 +384,7 @@ public class wordleMain extends Application {
         private int lettersAddedToRow = 0;
         public Button lastLetterButton;
 
+
         public void handleDeleteButtonClick() {
             if (hasGameEnded)
                 return;
@@ -385,6 +399,10 @@ public class wordleMain extends Application {
         }
 
 
+        public void addCssToInputedKey(char c)
+        {
+
+        }
 
 
 
@@ -517,15 +535,15 @@ public class wordleMain extends Application {
 
         private void colorizeRow(String color) {
             for (int col = 0; col < CellsCount; col++) {
-                gameGridButtons[currentRow][col].getStyleClass().clear();
-                gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+                //gameGridButtons[currentRow][col].getStyleClass().clear();
+                //gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
                 gameGridButtons[currentRow][col].getStyleClass().add(color);
             }
         }
 
         private void colorizeCell(int col, String color) {
-            gameGridButtons[currentRow][col].getStyleClass().clear();
-            gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+            //gameGridButtons[currentRow][col].getStyleClass().clear();
+            //gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
             gameGridButtons[currentRow][col].getStyleClass().add(color);
         }
 
@@ -535,8 +553,8 @@ public class wordleMain extends Application {
          */
         private void deColorizeRow() {
             for (int col = 0; col < CellsCount; col++) {
-                gameGridButtons[currentRow][col].getStyleClass().clear();
-                gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
+                //gameGridButtons[currentRow][col].getStyleClass().clear();
+                gameGridButtons[currentRow][col].getStyleClass().remove("red");
             }
         }
 
