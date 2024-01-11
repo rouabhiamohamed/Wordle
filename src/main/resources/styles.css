@@ -15,7 +15,48 @@
          -fx-border-radius: 6px;
          -fx-border-color: transparent;
          -fx-border-width: 0;
+}
 
+.button-keyboard-orange {
+    -fx-width: 43px;
+    -fx-height: 60px;
+    -fx-cursor: hand; /* JavaFX utilise 'hand' au lieu de 'pointer' */
+    -fx-margin: 2px;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold; /* '700' en CSS est équivalent à 'bold' en JavaFX */
+    -fx-text-fill: #fff; /* 'color' en CSS est équivalent à 'text-fill' en JavaFX */
+    -fx-background-color: #ff9137;
+    -fx-border-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.button-keyboard-green {
+    -fx-width: 43px;
+    -fx-height: 60px;
+    -fx-cursor: hand; /* JavaFX utilise 'hand' au lieu de 'pointer' */
+    -fx-margin: 2px;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold; /* '700' en CSS est équivalent à 'bold' en JavaFX */
+    -fx-text-fill: #fff; /* 'color' en CSS est équivalent à 'text-fill' en JavaFX */
+    -fx-background-color: #7eff84;
+    -fx-border-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.button-keyboard-gray {
+    -fx-width: 43px;
+    -fx-height: 60px;
+    -fx-cursor: hand; /* JavaFX utilise 'hand' au lieu de 'pointer' */
+    -fx-margin: 2px;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold; /* '700' en CSS est équivalent à 'bold' en JavaFX */
+    -fx-text-fill: #fff; /* 'color' en CSS est équivalent à 'text-fill' en JavaFX */
+    -fx-background-color: #212121;
+    -fx-border-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
 
 .ok-button {
@@ -41,18 +82,27 @@
 
 }
 
-.cell-button.flipped {
-    -fx-background-color: #90ee90; /* Couleur lorsqu'il est retourné (flipped) */
-    -fx-border-color: #008000; /* Bordure verte lorsque retourné */
-
-}
 .button-keyboard:pressed {
     -fx-background-color: #a9a9a9; /* Couleur lorsqu'on clique */
 }
-.cell-button.correct {
-    -fx-background-color: #ffff00; /* Couleur lorsqu'il est correct mais mal placé */
-    -fx-border-color: #808000; /* Bordure jaune lorsque correct mais mal placé */
+
+.button-keyboard-pressed {
+    -fx-background-color: #a9a9a9; /* Couleur lorsqu'on clique */
 }
+
+.button-keyboard-pressed-green {
+    -fx-background-color: #aaff96; /* Couleur lorsqu'on clique */
+}
+
+.button-keyboard-pressed-orange {
+    -fx-background-color: #ffb964; /* Couleur lorsqu'on clique */
+}
+
+.button-keyboard-pressed-gray {
+    -fx-background-color: #424242; /* Couleur lorsqu'on clique */
+}
+
+
 .button-64 {
     -fx-alignment: center;
     -fx-background-color: #EEE6D8;

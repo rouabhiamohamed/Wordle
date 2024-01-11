@@ -15,9 +15,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 
 
 public class wordleMain extends Application {
@@ -399,42 +399,6 @@ public class wordleMain extends Application {
         }
 
 
-        public void addCssToInputedKey(char c)
-        {
-
-        }
-
-
-
-        public void handleKeyPress(String keyPressed) {
-            if (!canAddLetters || hasGameEnded)
-                return;
-            if (virtualKeyboard.currentRow < 5) {
-                for (int row = 0; row < 5; row++) {
-                    for (int col = 0; col < CellsCount; col++) {
-                        if (gameGridButtons[row][col].getText().isEmpty()) {
-
-                                gameGridButtons[row][col].setText(keyPressed);
-                                virtualKeyboard.lastLetterButton = gameGridButtons[row][col];
-                                virtualKeyboard.lettersAddedToRow++;
-
-                                if (virtualKeyboard.lettersAddedToRow < CellsCount) {
-                                    virtualKeyboard.lastLetterButton = gameGridButtons[row][col + 1];
-                                }
-
-                                if (virtualKeyboard.lettersAddedToRow == CellsCount) {
-                                    canAddLetters = false;
-                                }
-
-                            return;
-                        }
-                    }
-                }
-            } else {
-                System.out.println("Vous ne pouvez plus ajouter de lettres après avoir validé la première ligne.");
-            }
-        }
-
         public void handleOkButtonClick() {
             if (hasGameEnded)
                 return;
@@ -475,13 +439,19 @@ public class wordleMain extends Application {
                     for (int i = 0; i < game.getCouleurMot().length; i++) {
                         switch (game.getCouleurMot()[i]) {
                             case 0:
-                                colorizeCell(i, "gray");
+                                colorizeCell(i, currentRow,"gray");
+                                flipCell(i);
+                                colorizeKeyboard(word.toString().charAt(i), "gray");
                                 break;
                             case 1:
-                                colorizeCell(i, "orange");
+                                colorizeCell(i, currentRow, "orange");
+                                colorizeKeyboard(word.toString().charAt(i), "orange");
+                                flipCell(i);
                                 break;
                             case 2:
-                                colorizeCell(i, "green");
+                                colorizeCell(i, currentRow, "green");
+                                colorizeKeyboard(word.toString().charAt(i), "green");
+                                flipCell(i);
                                 break;
                             // Ajoutez d'autres cas au besoin
                         }
@@ -525,26 +495,43 @@ public class wordleMain extends Application {
             }
         }
 
-        /*
-        We might want to use this in order to animate stuff a bit better...
-        for (int i = 0; i != CellsCount; i++) {
-            final int index = i;
-            Platform.runLater(() -> animateCellFlip(gameGridButtons[0][index], index + 1));
-        }
-         */
 
         private void colorizeRow(String color) {
             for (int col = 0; col < CellsCount; col++) {
-                //gameGridButtons[currentRow][col].getStyleClass().clear();
-                //gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
                 gameGridButtons[currentRow][col].getStyleClass().add(color);
             }
         }
 
-        private void colorizeCell(int col, String color) {
-            //gameGridButtons[currentRow][col].getStyleClass().clear();
-            //gameGridButtons[currentRow][col].getStyleClass().add("cell-button");
-            gameGridButtons[currentRow][col].getStyleClass().add(color);
+        private void colorizeCell(int col, int row, String color) {
+            PauseTransition pause = new PauseTransition(Duration.millis(col * 500));
+            pause.setOnFinished(event -> {
+                gameGridButtons[row][col].getStyleClass().add(color);
+            });
+            pause.play();
+        }
+
+
+        /*
+            Colorize the keyboard according to the letters used in the answer
+         */
+        private  void colorizeKeyboard(char toColorize, String color)
+        {
+            arrayOfButtons[toColorize].getStyleClass().remove("button-keyboard");
+            arrayOfButtons[toColorize].getStyleClass().add("button-keyboard-"+color);
+        }
+
+        /*
+            Used whenever the player inputs a valid word, this flips the letter
+         */
+        private void flipCell(int col) {
+            RotateTransition rotateTransition = new RotateTransition(Duration.seconds(0.5), gameGridButtons[currentRow][col]);
+            rotateTransition.setAxis(Rotate.X_AXIS);
+            // Pas peu fier de l'astuce :muscle:
+            rotateTransition.setFromAngle(-180);
+            rotateTransition.setToAngle(0);
+            Duration delay = Duration.millis(col*500);
+            rotateTransition.setDelay(delay);
+            rotateTransition.play();
         }
 
         /*
@@ -583,17 +570,6 @@ public class wordleMain extends Application {
         canAddLetters = true;
     }
 
-
-    private void animateCellFlip(Button cellButton, int delay) {
-        Timeline timeline = new Timeline();
-        KeyFrame keyFrame = new KeyFrame(
-                Duration.millis(delay * 200), // Délai multiplié par 100 pour créer un délai progressif
-                new KeyValue(cellButton.styleProperty(), "-fx-background-color: #90ee90;", Interpolator.LINEAR)
-        );
-
-        timeline.getKeyFrames().add(keyFrame);
-        timeline.play();
-    }
 
     /*
         This function is called when the player wins a match, for now it's just an alert
