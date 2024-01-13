@@ -2,6 +2,7 @@ package frontend;
 
 import backend.Hint;
 import backend.Partie;
+import backend.Score;
 import javafx.animation.*;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -27,6 +28,8 @@ public class wordleMain extends Application {
     private Button[][] gameGridButtons;
 
     private Stage gameStage;
+
+    private Stage scoreStage;
     private long startTime;
     private final char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y'};
     private int nextLetterIndex = 0;
@@ -37,6 +40,7 @@ public class wordleMain extends Application {
     private int CellsCount;
     // Contains the word to find, somehow this wasn't here already lol
     private String wordToFind;
+    private int score;
     // This boolean is used so the program knows if it can add new letters or not
     // it effectively blocks the input until the word gets registred
     private boolean canAddLetters;
@@ -163,7 +167,8 @@ public class wordleMain extends Application {
         });
 
         gameScene.getRoot().setStyle("-fx-background-color: #4d4d4d;"); // Code couleur pour le bleu
-        gameScene.getStylesheets().add("./src/main/resources/styles.css");
+       // gameScene.getStylesheets().add("./src/main/resources/styles.css");
+        gameScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/PROJET_PROG_SCORE/src/main/resources/styles.css");
 
 
         // Build the game UI components using JavaFX controls
@@ -179,6 +184,12 @@ public class wordleMain extends Application {
         MenuItem helpMenuItem = new MenuItem("Help");
 
         MenuItem highScoresMenuItem = new MenuItem("High Scores");
+
+        highScoresMenuItem.setOnAction(e -> {
+            scoreUid();
+
+        });
+
 
         gameMenu.getItems().addAll(startGameMenuItem, restartMenuItem, helpMenuItem, highScoresMenuItem);
         myMenuBar.getMenus().add(gameMenu);
@@ -280,9 +291,15 @@ public class wordleMain extends Application {
         highScore.getStyleClass().addAll("button-64");
 
         Button saveScore = new Button("Save High Scores");
-        saveScore.getStyleClass().addAll("button-64");
 
-        Label winStreak = new Label("Win Streak:");
+        saveScore.setOnAction(e-> {
+            int res = Score.saveScores(score);
+            showScoreSavedMessage(res);
+        });
+        saveScore.getStyleClass().addAll("button-64");
+        score =  Score.getScore();
+
+        Label winStreak = new Label("Win Streak: " + score);
         winStreak.getStyleClass().addAll("text");
 
         scoreInfoPanel.getChildren().addAll(winStreak,highScore,saveScore );
@@ -294,6 +311,70 @@ public class wordleMain extends Application {
 
         // Initialisez l'instance de VirtualKeyboard
         virtualKeyboard = new VirtualKeyboard();
+    }
+    private void showScoreSavedMessage(int res) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Score Saved");
+        alert.setHeaderText(null);
+        if (res ==0){
+            alert.setContentText("Your score is too low !");
+        }
+        else {
+            alert.setContentText("Your score has been successfully saved!");
+        }
+        alert.showAndWait();
+    }
+
+    private void scoreUid() {
+        scoreStage = new Stage();
+        scoreStage.setTitle("Scores");
+        scoreStage.setResizable(false);
+
+        BorderPane mainPane = new BorderPane();
+        mainPane.setPrefSize(400, 300);
+
+        // Title
+        Label titleLabel = new Label("Scores");
+        titleLabel.setStyle("-fx-font-size: 20; -fx-font-weight: bold;");
+        BorderPane.setAlignment(titleLabel, Pos.CENTER);
+        mainPane.setTop(titleLabel);
+
+        // Scores
+        VBox scoreBox = new VBox(10);
+        int[] scores = Score.getScores();
+
+        Label totalScoreLabel = new Label("Total Score");
+        totalScoreLabel.setStyle("-fx-font-weight: bold;");
+        scoreBox.getChildren().add(totalScoreLabel);
+
+        for (int score : scores) {
+            if (score != 0) {
+                Label scoreLabel = new Label("Score: " + score);
+                scoreBox.getChildren().add(scoreLabel);
+            }
+        }
+
+        // Back button
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> {
+            scoreStage.close();
+            gameStage.show();
+        });
+
+        // Add components to mainPane
+        mainPane.setCenter(scoreBox);
+        mainPane.setBottom(backButton);
+
+
+        BorderPane gameLayout = new BorderPane();
+        Scene scoreScene = new Scene(gameLayout, 800, 768);
+        scoreStage.setScene(scoreScene);
+        gameStage.hide();
+        scoreStage.show();
+
+       /* Scene scoresScene = new Scene(mainPane);
+        scoreStage.setScene(scoresScene);
+        scoreStage.showAndWait();*/
     }
 
     private VBox createVirtualKeyboard() {
@@ -453,6 +534,8 @@ public class wordleMain extends Application {
 
                 // If the answer has been found
                 if (stateOfWord == 1) {
+                    score +=1;
+                    Score.addScore(score);
                     // Coloriez toute la ligne en vert
                     colorizeRow("green");
                     hasGameEnded = true;
