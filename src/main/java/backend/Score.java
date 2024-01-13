@@ -74,10 +74,10 @@ public class Score {
     }
 
     public static int saveScores(int score) {
-        File myObj = new File(System.getProperty("user.dir") + File.separator + "/src/main/resources/bestscores.txt");
+        File scorefile = new File(System.getProperty("user.dir") + File.separator + "/src/main/resources/bestscores.txt");
 
-        if (myObj.length() == 0) {
-            try (FileWriter writer = new FileWriter(myObj, true)) {
+        if (scorefile.length()==0) {
+            try (FileWriter writer = new FileWriter(scorefile, true)) {
                 writer.write(String.valueOf(score));
                 return 1;
             } catch (IOException e) {
@@ -86,21 +86,26 @@ public class Score {
             }
         } else {
             int max = 0;
-            try (Scanner myReader = new Scanner(myObj)) {
+            try (Scanner myReader = new Scanner(scorefile)) {
                 while (myReader.hasNextLine()) {
                     String data = myReader.nextLine();
-                    int currentScore = Integer.parseInt(data);
-                    if (max < currentScore) {
-                        max = currentScore;
+                    if (!data.isEmpty()) {
+                        int currentScore = Integer.parseInt(data);
+                        if (max < currentScore) {
+                            max = currentScore;
+                        }
                     }
                 }
             } catch (IOException e) {
                 System.out.println("An error occurred.");
                 e.printStackTrace();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return 0;
             }
 
             if (score >= max) {
-                try (FileWriter writer = new FileWriter(myObj, true)) {
+                try (FileWriter writer = new FileWriter(scorefile, true)) {
                     writer.write("\n" + score);
                     return 1;
                 } catch (IOException e) {
@@ -111,5 +116,7 @@ public class Score {
         }
         return 0;
     }
-}
+    }
+
+
 

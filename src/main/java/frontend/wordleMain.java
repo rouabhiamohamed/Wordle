@@ -8,6 +8,7 @@ import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -83,8 +84,8 @@ public class wordleMain extends Application {
         mainMenuStage.show();
 
         // Load the CSS
-        mainMenuScene.getStylesheets().add("./src/main/resources/styles.css");
-
+        //mainMenuScene.getStylesheets().add("./src/main/resources/styles.css");
+        mainMenuScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/PROJET_PROG_SCORE/src/main/resources/styles.css");
 
         // I made it so the time updates every seconds instead of whenever the player clicks on OK lmao
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> updateElapsedTime()));
@@ -109,6 +110,8 @@ public class wordleMain extends Application {
         startTime = System.currentTimeMillis();
         gameStage = new Stage();
         gameStage.setTitle("Mon menu Wordle");
+        gameStage.setMinHeight(800);
+        gameStage.setMinWidth(800);
 
         //I put the initialization of the grid here since I can't do it earlier...
         //Cells means how wide, as for the 5 it means you have 5 chance to find the word
@@ -185,10 +188,7 @@ public class wordleMain extends Application {
 
         MenuItem highScoresMenuItem = new MenuItem("High Scores");
 
-        highScoresMenuItem.setOnAction(e -> {
-            scoreUid();
 
-        });
 
 
         gameMenu.getItems().addAll(startGameMenuItem, restartMenuItem, helpMenuItem, highScoresMenuItem);
@@ -288,6 +288,7 @@ public class wordleMain extends Application {
         scoreInfoPanel.getChildren().add(elapsedTimeLabel);
 
         Button highScore = new Button("High Scores");
+        highScore.setOnAction(e ->scoreUid());
         highScore.getStyleClass().addAll("button-64");
 
         Button saveScore = new Button("Save High Scores");
@@ -328,7 +329,8 @@ public class wordleMain extends Application {
     private void scoreUid() {
         scoreStage = new Stage();
         scoreStage.setTitle("Scores");
-        scoreStage.setResizable(false);
+        scoreStage.setMinWidth(400);
+        scoreStage.setMinHeight(400);
 
         BorderPane mainPane = new BorderPane();
         mainPane.setPrefSize(400, 300);
@@ -356,6 +358,7 @@ public class wordleMain extends Application {
 
         // Back button
         Button backButton = new Button("Back");
+
         backButton.setOnAction(e -> {
             scoreStage.close();
             gameStage.show();
@@ -364,17 +367,30 @@ public class wordleMain extends Application {
         // Add components to mainPane
         mainPane.setCenter(scoreBox);
         mainPane.setBottom(backButton);
+        mainPane.setStyle("-fx-background-color: #2C2C2C;"); // Fond noir/gris
 
+        titleLabel.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #FFA500;"); // Texte orange
 
-        BorderPane gameLayout = new BorderPane();
-        Scene scoreScene = new Scene(gameLayout, 800, 768);
+        // Centrez les scores
+        scoreBox.setAlignment(Pos.CENTER);
+
+        // Style pour les scores
+        totalScoreLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #FFA500;"); // Texte orange
+
+        for (Node node : scoreBox.getChildren()) {
+            if (node instanceof Label) {
+                ((Label) node).setStyle("-fx-text-fill: #FFA500;"); // Texte orange
+            }
+        }
+
+        backButton.setStyle("-fx-text-fill: #FFA500;");
+
+        Scene scoreScene = new Scene(mainPane, 400, 300);
+        scoreScene.getStylesheets().add("file:///C:/Users/Principal/Desktop/PROJET_PROG_SCORE/src/main/resources/styles.css");
+
         scoreStage.setScene(scoreScene);
         gameStage.hide();
         scoreStage.show();
-
-       /* Scene scoresScene = new Scene(mainPane);
-        scoreStage.setScene(scoresScene);
-        scoreStage.showAndWait();*/
     }
 
     private VBox createVirtualKeyboard() {
@@ -509,6 +525,7 @@ public class wordleMain extends Application {
 
                 // Si le mot est correct, mais mal placé
                 if (stateOfWord == 0 || stateOfWord == -2) {
+
                     // Coloriez chaque cellule en fonction de game.getCouleurMot()[i]
                     for (int i = 0; i < game.getCouleurMot().length; i++) {
                         switch (game.getCouleurMot()[i]) {
@@ -534,10 +551,19 @@ public class wordleMain extends Application {
 
                 // If the answer has been found
                 if (stateOfWord == 1) {
-                    score +=1;
-                    Score.addScore(score);
+                    if(game.getCouleurMot().length == 5)  score +=1;
+                    else if (game.getCouleurMot().length == 6) score +=2;
+                    else score +=4;
+
+                        Score.addScore(score);
+
+                    for (int i = 0; i < game.getCouleurMot().length; i++) {
+                        colorizeCell(i, currentRow,"green");
+                        flipCell(i);
+                        colorizeKeyboard(word.toString().charAt(i), "green");
+                    }
                     // Coloriez toute la ligne en vert
-                    colorizeRow("green");
+
                     hasGameEnded = true;
                     playerWon();
                     return;

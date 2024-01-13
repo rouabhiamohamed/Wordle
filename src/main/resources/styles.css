@@ -185,5 +185,28 @@
 
 }
 
+#mainPane {
+    -fx-background-color: #2C2C2C;
+}
+
+#titleLabel {
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFA500;
+}
+
+#scoreBox {
+    -fx-alignment: center;
+}
+
+#totalScoreLabel {
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFA500;
+}
+
+#backButton {
+    -fx-text-fill: #FFA500;
+}
+
 
 
